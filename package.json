@@ -1,0 +1,26 @@
+{
+  "name": "nevula",
+  "version": "0.1.0",
+  "description": "A (relatively) simple and (hopefully) performant markup parser",
+  "main": "publish/node/nevula.js",
+  "browser": "publish/esm/nevula.js",
+  "types": "publish/esm/nevula.d.ts",
+  "repository": "https://github.com/Brecert/nevula.git",
+  "author": "brecert <11599528+Brecert@users.noreply.github.com>",
+  "license": "MIT",
+  "files": [
+    "./publish/*"
+  ],
+  "scripts": {
+    "build": "tsc --build tsconfig.esm.json && tsc --build tsconfig.node.json",
+    "bench": "deno run --allow-hrtime bench.ts"
+  },
+  "keywords": [
+    "markup",
+    "language",
+    "parser"
+  ],
+  "devDependencies": {
+    "typescript": "^4.2.3"
+  }
+}

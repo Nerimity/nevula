@@ -18,8 +18,3 @@ export function partition<T>(list: T[], filter: (item: T) => boolean) {
   }
   return result;
 }
-
-export const dbg = <T>(val: T) => {
-  console.debug(val);
-  return val;
-};

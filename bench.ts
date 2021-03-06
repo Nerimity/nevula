@@ -14,7 +14,7 @@ import {
 
 import { Marked } from "https://deno.land/x/markdown@v2.0.0/mod.ts";
 
-import { parseMarkup } from "./nevula.ts";
+import { parseMarkup } from "./mod.ts";
 
 const RUNS = 2500;
 

@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "lib": ["ES2020"],
+    "moduleResolution": "node",
+    "declaration": true,
+    "strict": true,
+  },
+  "include": [
+    "publish/nevula.ts"
+  ],
+  "exclude": [
+    "node_modules",
+  ]
+}
