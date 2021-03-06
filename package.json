@@ -13,7 +13,8 @@
   ],
   "scripts": {
     "build": "tsc --build tsconfig.esm.json && tsc --build tsconfig.node.json",
-    "bench": "deno run --allow-hrtime bench.ts"
+    "bench": "deno run --allow-hrtime bench.ts",
+    "test": "deno test"
   },
   "keywords": [
     "markup",
