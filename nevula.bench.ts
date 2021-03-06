@@ -26,7 +26,7 @@ const INITIAL_SAMPLE = `
 \`\`code\`\`
 
 ** ~~not~~ a complete marker! __complete__
-`.trim()
+`.trim();
 
 const SAMPLE = INITIAL_SAMPLE.repeat(7);
 

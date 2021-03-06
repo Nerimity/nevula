@@ -105,12 +105,12 @@ Deno.test("parses a complex markup example", () => {
   );
 });
 
-Deno.test('parsed multilines and indentation', () => {
+Deno.test("parsed multilines and indentation", () => {
   let text = `
 > a blockquote!
     > not a blockquote
-  `
-  
+  `;
+
   assertEquals<Entity>(
     parseMarkup(text),
     {
@@ -122,9 +122,9 @@ Deno.test('parsed multilines and indentation', () => {
         innerSpan: { start: 2, end: 16 },
         outerSpan: { start: 0, end: 17 },
         entities: [],
-        params: {}
+        params: {},
       }],
-      params: {}
-    }
-  )
-})
+      params: {},
+    },
+  );
+});

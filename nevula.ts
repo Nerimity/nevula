@@ -249,7 +249,7 @@ export function parseMarkup(text: string): Entity {
         );
         if (markerIndex >= 0) {
           const endToken = tokens[markerIndex];
-          console.log(endToken)
+          console.log(endToken);
           const endIndice: Span = {
             start: endToken.index!,
             end: endToken.index! + endToken[0].length,
