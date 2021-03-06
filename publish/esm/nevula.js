@@ -48,6 +48,7 @@ const tokenType = (token) => TYPES[token.findIndex((g, i) => i != 0 && g != null
  * @returns A root text entitiy, meant to make entity rendering easier
  */
 export function parseMarkup(text) {
+    var _a, _b;
     let markers = [];
     let entities = [];
     let tokens = [...text.matchAll(TOKENS)];
@@ -158,12 +159,12 @@ export function parseMarkup(text) {
                     langRegex.lastIndex = indice.end;
                     const args = langRegex.exec(text);
                     // remove the \n
-                    const lang = args?.[0]?.trim();
+                    const lang = (_a = args === null || args === void 0 ? void 0 : args[0]) === null || _a === void 0 ? void 0 : _a.trim();
                     entities.push({
                         type: "codeblock",
                         // add the lang length to the innerSpan start to skip that when getting the text
                         innerSpan: {
-                            start: endIndice.end + (lang?.length ?? 0),
+                            start: endIndice.end + ((_b = lang === null || lang === void 0 ? void 0 : lang.length) !== null && _b !== void 0 ? _b : 0),
                             end: indice.start,
                         },
                         outerSpan: { start: endIndice.start, end: indice.end },

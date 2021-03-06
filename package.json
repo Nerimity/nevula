@@ -1,6 +1,6 @@
 {
   "name": "nevula",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "A (relatively) simple and (hopefully) performant markup parser",
   "main": "publish/node/nevula.js",
   "browser": "publish/esm/nevula.js",
