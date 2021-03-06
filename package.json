@@ -1,6 +1,6 @@
 {
   "name": "nevula",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "A (relatively) simple and (hopefully) performant markup parser",
   "main": "publish/node/nevula.js",
   "browser": "publish/esm/nevula.js",
@@ -9,7 +9,9 @@
   "author": "brecert <11599528+Brecert@users.noreply.github.com>",
   "license": "MIT",
   "files": [
-    "./publish/*"
+    "publish/nevula.ts",
+    "publish/esm/*",
+    "publish/node/*"
   ],
   "scripts": {
     "build": "tsc --build tsconfig.esm.json && tsc --build tsconfig.node.json",
