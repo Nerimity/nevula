@@ -2,7 +2,7 @@ import {
   assert,
   assertEquals,
 } from "https://deno.land/std@0.89.0/testing/asserts.ts";
-import { containsSpan, partition } from "./utils.ts";
+import { containsSpan, partition } from "./nevula.ts";
 
 Deno.test("containsSpan", () => {
   const largeSpan = { start: 0, end: 10 };

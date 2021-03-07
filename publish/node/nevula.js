@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.parseMarkup = exports.UnreachableCaseError = exports.containsSpan = void 0;
+exports.parseMarkup = exports.partition = exports.UnreachableCaseError = exports.containsSpan = void 0;
 /** Checks if `largeSpan` can contain `smallSpan` */
 function containsSpan(largeSpan, smallSpan) {
     return largeSpan.start < smallSpan.start && smallSpan.end < largeSpan.end;
@@ -27,6 +27,7 @@ function partition(list, filter) {
     }
     return result;
 }
+exports.partition = partition;
 /**
  * Generate a global regex from a record
  *

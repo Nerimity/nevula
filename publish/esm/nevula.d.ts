@@ -4,6 +4,8 @@ export declare function containsSpan(largeSpan: Span, smallSpan: Span): boolean;
 export declare class UnreachableCaseError extends Error {
     constructor(val: never);
 }
+/** Partition a list into two parts based on a boolean: `[true, false]` */
+export declare function partition<T>(list: T[], filter: (item: T) => boolean): [T[], T[]];
 /** A span, similar to ranges in other languages */
 export declare type Span = {
     start: number;

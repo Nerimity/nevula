@@ -1,5 +1,5 @@
 import { assertEquals } from "https://deno.land/std@0.89.0/testing/asserts.ts";
-import { Entity, parseMarkup, Span } from "./nevula.ts";
+import { Entity, parseMarkup } from "./nevula.ts";
 
 Deno.test("parse multiple levels of syntax", () => {
   const text = "__~~**//italic bold  ``code`` strikethrough underline//**~~__";

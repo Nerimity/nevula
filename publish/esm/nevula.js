@@ -9,7 +9,7 @@ export class UnreachableCaseError extends Error {
     }
 }
 /** Partition a list into two parts based on a boolean: `[true, false]` */
-function partition(list, filter) {
+export function partition(list, filter) {
     let result = [[], []];
     for (let i = 0; i < list.length; i++) {
         const item = list[i];

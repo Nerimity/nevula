@@ -11,7 +11,7 @@ export class UnreachableCaseError extends Error {
 }
 
 /** Partition a list into two parts based on a boolean: `[true, false]` */
-function partition<T>(list: T[], filter: (item: T) => boolean) {
+export function partition<T>(list: T[], filter: (item: T) => boolean) {
   let result: [T[], T[]] = [[], []];
   for (let i = 0; i < list.length; i++) {
     const item = list[i];

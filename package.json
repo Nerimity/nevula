@@ -1,6 +1,6 @@
 {
   "name": "nevula",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "A (relatively) simple and (hopefully) performant markup parser",
   "main": "publish/node/nevula.js",
   "browser": "publish/esm/nevula.js",
@@ -9,7 +9,7 @@
   "author": "brecert <11599528+Brecert@users.noreply.github.com>",
   "license": "MIT",
   "files": [
-    "publish/nevula.ts",
+    "nevula.ts",
     "publish/esm/*",
     "publish/node/*"
   ],
