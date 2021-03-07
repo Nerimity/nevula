@@ -3,6 +3,13 @@ export function containsSpan(largeSpan: Span, smallSpan: Span): boolean {
   return largeSpan.start < smallSpan.start && smallSpan.end < largeSpan.end;
 }
 
+/** Assertion util for the ts compiler to tell it that it should never happen */
+export class UnreachableCaseError extends Error {
+  constructor(val: never) {
+    super(`Unreachable case: ${JSON.stringify(val)}`);
+  }
+}
+
 /** Partition a list into two parts based on a boolean: `[true, false]` */
 function partition<T>(list: T[], filter: (item: T) => boolean) {
   let result: [T[], T[]] = [[], []];
@@ -71,9 +78,9 @@ const generateRegex = (parts: Record<string, RegExp>) => {
   );
 };
 
-const generateMapping = (
-  parts: Record<string, RegExp>,
-) => [...Object.keys(parts)];
+function generateMapping<T extends string>(parts: Record<T, RegExp>): T[] {
+  return [...Object.keys(parts)] as T[];
+}
 
 const TOKEN_PARTS = {
   bold: /\*\*/,
@@ -91,14 +98,15 @@ const TOKEN_PARTS = {
 const TOKENS = generateRegex(TOKEN_PARTS);
 const TYPES = generateMapping(TOKEN_PARTS);
 
+function tokenType(token: RegExpMatchArray) {
+  return TYPES[token.findIndex((g, i) => i != 0 && g != null) - 1];
+}
+
 /** A marker used for identifying and matching tokens  */
 export type Marker = {
   type: "bold" | "italic" | "underline" | "strikethrough" | "blockquote";
   span: Span;
 };
-
-const tokenType = (token: RegExpMatchArray) =>
-  TYPES[token.findIndex((g, i) => i != 0 && g != null) - 1];
 
 /**
  * Parses a string into entities
@@ -283,9 +291,11 @@ export function parseMarkup(text: string): Entity {
         }
         break;
       }
-      default: {
-        throw new Error(`unknown token type: ${type}`);
-      }
+      // skip custom_end, it's not used for matching anything behind it
+      case "custom_end":
+        break;
+      default:
+        throw new UnreachableCaseError(type);
     }
   }
   parseLine({ start: text.length, end: text.length });

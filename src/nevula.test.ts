@@ -128,3 +128,18 @@ Deno.test("parsed multilines and indentation", () => {
     },
   );
 });
+
+Deno.test("custom_end should be ignored", () => {
+  let text = `abc ]`;
+
+  assertEquals<Entity>(
+    parseMarkup(text),
+    {
+      type: "text",
+      innerSpan: { start: 0, end: text.length },
+      outerSpan: { start: 0, end: text.length },
+      entities: [],
+      params: {},
+    },
+  );
+});

@@ -2,6 +2,12 @@
 export function containsSpan(largeSpan, smallSpan) {
     return largeSpan.start < smallSpan.start && smallSpan.end < largeSpan.end;
 }
+/** Assertion util for the ts compiler to tell it that it should never happen */
+export class UnreachableCaseError extends Error {
+    constructor(val) {
+        super(`Unreachable case: ${JSON.stringify(val)}`);
+    }
+}
 /** Partition a list into two parts based on a boolean: `[true, false]` */
 function partition(list, filter) {
     let result = [[], []];
@@ -27,7 +33,9 @@ const generateRegex = (parts) => {
         .map(([type, pattern]) => `(${pattern.source})`)
         .join("|"), "g");
 };
-const generateMapping = (parts) => [...Object.keys(parts)];
+function generateMapping(parts) {
+    return [...Object.keys(parts)];
+}
 const TOKEN_PARTS = {
     bold: /\*\*/,
     italic: /\/\//,
@@ -42,7 +50,9 @@ const TOKEN_PARTS = {
 // todo: manually do this
 const TOKENS = generateRegex(TOKEN_PARTS);
 const TYPES = generateMapping(TOKEN_PARTS);
-const tokenType = (token) => TYPES[token.findIndex((g, i) => i != 0 && g != null) - 1];
+function tokenType(token) {
+    return TYPES[token.findIndex((g, i) => i != 0 && g != null) - 1];
+}
 /**
  * Parses a string into entities
  * @returns A root text entitiy, meant to make entity rendering easier
@@ -196,9 +206,11 @@ export function parseMarkup(text) {
                 }
                 break;
             }
-            default: {
-                throw new Error(`unknown token type: ${type}`);
-            }
+            // skip custom_end, it's not used for matching anything behind it
+            case "custom_end":
+                break;
+            default:
+                throw new UnreachableCaseError(type);
         }
     }
     parseLine({ start: text.length, end: text.length });

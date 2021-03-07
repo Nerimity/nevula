@@ -1,5 +1,9 @@
 /** Checks if `largeSpan` can contain `smallSpan` */
 export declare function containsSpan(largeSpan: Span, smallSpan: Span): boolean;
+/** Assertion util for the ts compiler to tell it that it should never happen */
+export declare class UnreachableCaseError extends Error {
+    constructor(val: never);
+}
 /** A span, similar to ranges in other languages */
 export declare type Span = {
     start: number;

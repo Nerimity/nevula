@@ -6,6 +6,8 @@
     "moduleResolution": "node",
     "declaration": true,
     "strict": true,
+    "alwaysStrict": true,
+    "noImplicitReturns": true
   },
   "include": [
     "publish/nevula.ts"
