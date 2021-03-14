@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.parseMarkup = exports.partition = exports.UnreachableCaseError = exports.containsSpan = void 0;
+exports.addTextSpans = exports.parseMarkup = exports.partition = exports.UnreachableCaseError = exports.containsSpan = void 0;
 /** Checks if `largeSpan` can contain `smallSpan` */
 function containsSpan(largeSpan, smallSpan) {
     return largeSpan.start < smallSpan.start && smallSpan.end < largeSpan.end;
@@ -64,7 +64,7 @@ function tokenType(token) {
  * @returns A root text entitiy, meant to make entity rendering easier
  */
 function parseMarkup(text) {
-    var _a, _b;
+    var _a, _b, _c;
     let markers = [];
     let entities = [];
     let tokens = [...text.matchAll(TOKENS)];
@@ -91,7 +91,7 @@ function parseMarkup(text) {
         if (text.startsWith("> ", indice.end)) {
             markers.push({
                 type: "blockquote",
-                span: { start: indice.start, end: indice.end + 1 },
+                span: { start: indice.start, end: indice.end + 2 },
             });
         }
     }
@@ -171,7 +171,7 @@ function parseMarkup(text) {
                         end: endToken.index + endToken[0].length,
                     };
                     // get lang param
-                    const langRegex = /\w+\n/;
+                    const langRegex = /\w+\n/g;
                     langRegex.lastIndex = indice.end;
                     const args = langRegex.exec(text);
                     // remove the \n
@@ -180,10 +180,10 @@ function parseMarkup(text) {
                         type: "codeblock",
                         // add the lang length to the innerSpan start to skip that when getting the text
                         innerSpan: {
-                            start: endIndice.end + ((_b = lang === null || lang === void 0 ? void 0 : lang.length) !== null && _b !== void 0 ? _b : 0),
-                            end: indice.start,
+                            start: indice.end + ((_c = (_b = args === null || args === void 0 ? void 0 : args[0]) === null || _b === void 0 ? void 0 : _b.length) !== null && _c !== void 0 ? _c : 0),
+                            end: endIndice.start,
                         },
-                        outerSpan: { start: endIndice.start, end: indice.end },
+                        outerSpan: { start: indice.start, end: endIndice.end },
                         entities: [],
                         params: {
                             lang: lang,
@@ -229,3 +229,43 @@ function parseMarkup(text) {
     });
 }
 exports.parseMarkup = parseMarkup;
+/** modifies an entity's entities to add text spans */
+function addTextSpans(entity) {
+    var _a, _b;
+    if (entity.entities.length === 0) {
+        return entity;
+    }
+    let entities = [];
+    for (let i = 0; i < entity.entities.length; i++) {
+        const e = entity.entities[i];
+        const textSpan = {
+            start: (_b = (_a = entities[entities.length - 1]) === null || _a === void 0 ? void 0 : _a.outerSpan.end) !== null && _b !== void 0 ? _b : entity.innerSpan.start,
+            end: e.outerSpan.start,
+        };
+        if (textSpan.end > textSpan.start) {
+            entities.push({
+                type: "text",
+                innerSpan: textSpan,
+                outerSpan: textSpan,
+                entities: [],
+                params: {},
+            });
+        }
+        entities.push(addTextSpans(e));
+    }
+    const endingTextSpan = {
+        start: entity.entities[entity.entities.length - 1].outerSpan.end,
+        end: entity.innerSpan.end,
+    };
+    if (endingTextSpan.end > endingTextSpan.start) {
+        entities.push({
+            type: "text",
+            innerSpan: endingTextSpan,
+            outerSpan: endingTextSpan,
+            entities: [],
+            params: {},
+        });
+    }
+    return { ...entity, entities };
+}
+exports.addTextSpans = addTextSpans;

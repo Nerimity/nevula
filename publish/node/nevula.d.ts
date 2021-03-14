@@ -45,3 +45,5 @@ export declare type Marker = {
  * @returns A root text entitiy, meant to make entity rendering easier
  */
 export declare function parseMarkup(text: string): Entity;
+/** modifies an entity's entities to add text spans */
+export declare function addTextSpans(entity: Entity): Entity;
