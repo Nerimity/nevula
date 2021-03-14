@@ -1,9 +1,9 @@
-// deno run --allow-write --allow-read --allow-hrtime ./nevula.bench.ts update-readme
+// deno run --allow-write --allow-read --allow-hrtime ./bench.ts update-readme
 
 import {
   bench,
   runBenchmarks,
-} from "https://deno.land/std@0.89.0/testing/bench.ts";
+} from "https://deno.land/std@0.90.0/testing/bench.ts";
 
 import {
   defaultColumns,
@@ -14,7 +14,7 @@ import {
 
 import { Marked } from "https://deno.land/x/markdown@v2.0.0/mod.ts";
 
-import { parseMarkup } from "./mod.ts";
+import { addTextSpans, parseMarkup } from "./nevula.ts";
 
 const RUNS = 2500;
 
@@ -36,6 +36,16 @@ bench({
   func(b): void {
     b.start();
     parseMarkup(SAMPLE);
+    b.stop();
+  },
+});
+
+bench({
+  name: "nevula with inserted text spans",
+  runs: RUNS,
+  func(b): void {
+    b.start();
+    addTextSpans(parseMarkup(SAMPLE));
     b.stop();
   },
 });

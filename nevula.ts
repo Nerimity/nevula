@@ -148,7 +148,7 @@ export function parseMarkup(text: string): Entity {
     if (text.startsWith("> ", indice.end)) {
       markers.push({
         type: "blockquote",
-        span: { start: indice.start, end: indice.end + 1 },
+        span: { start: indice.start, end: indice.end + 2 },
       });
     }
   }
@@ -244,7 +244,7 @@ export function parseMarkup(text: string): Entity {
             end: endToken.index! + endToken[0].length,
           };
           // get lang param
-          const langRegex = /\w+\n/;
+          const langRegex = /\w+\n/g;
           langRegex.lastIndex = indice.end;
           const args = langRegex.exec(text);
           // remove the \n
@@ -254,10 +254,10 @@ export function parseMarkup(text: string): Entity {
             type: "codeblock",
             // add the lang length to the innerSpan start to skip that when getting the text
             innerSpan: {
-              start: endIndice.end + (lang?.length ?? 0),
-              end: indice.start,
+              start: indice.end + (args?.[0]?.length ?? 0),
+              end: endIndice.start,
             },
-            outerSpan: { start: endIndice.start, end: indice.end },
+            outerSpan: { start: indice.start, end: endIndice.end },
             entities: [],
             params: {
               lang: lang,
@@ -307,4 +307,52 @@ export function parseMarkup(text: string): Entity {
     entities: entities,
     params: {},
   });
+}
+
+/** modifies an entity's entities to add text spans */
+export function addTextSpans(entity: Entity): Entity {
+  if (entity.entities.length === 0) {
+    return entity;
+  }
+
+  let entities: Entity[] = [];
+
+  for (let i = 0; i < entity.entities.length; i++) {
+    const e = entity.entities[i];
+
+    const textSpan = {
+      start: entities[entities.length - 1]?.outerSpan.end ??
+        entity.innerSpan.start,
+      end: e.outerSpan.start,
+    };
+
+    if (textSpan.end > textSpan.start) {
+      entities.push({
+        type: "text",
+        innerSpan: textSpan,
+        outerSpan: textSpan,
+        entities: [],
+        params: {},
+      });
+    }
+
+    entities.push(addTextSpans(e));
+  }
+
+  const endingTextSpan = {
+    start: entity.entities[entity.entities.length - 1].outerSpan.end,
+    end: entity.innerSpan.end,
+  };
+
+  if (endingTextSpan.end > endingTextSpan.start) {
+    entities.push({
+      type: "text",
+      innerSpan: endingTextSpan,
+      outerSpan: endingTextSpan,
+      entities: [],
+      params: {},
+    });
+  }
+
+  return { ...entity, entities };
 }

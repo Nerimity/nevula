@@ -1,5 +1,5 @@
 import { assertEquals } from "https://deno.land/std@0.89.0/testing/asserts.ts";
-import { Entity, parseMarkup } from "./nevula.ts";
+import { addTextSpans, Entity, parseMarkup } from "./nevula.ts";
 
 Deno.test("parse multiple levels of syntax", () => {
   const text = "__~~**//italic bold  ``code`` strikethrough underline//**~~__";
@@ -67,7 +67,7 @@ Deno.test("parses a complex markup example", () => {
       outerSpan: { start: 0, end: text.length },
       entities: [{
         type: "blockquote",
-        innerSpan: { start: 1, end: text.length },
+        innerSpan: { start: 2, end: text.length },
         outerSpan: { start: 0, end: text.length },
         entities: [
           {
@@ -119,7 +119,7 @@ Deno.test("parsed multilines and indentation", () => {
       outerSpan: { start: 0, end: text.length },
       entities: [{
         type: "blockquote",
-        innerSpan: { start: 2, end: 16 },
+        innerSpan: { start: 3, end: 16 },
         outerSpan: { start: 0, end: 17 },
         entities: [],
         params: {},
@@ -141,5 +141,38 @@ Deno.test("custom_end should be ignored", () => {
       entities: [],
       params: {},
     },
+  );
+});
+
+function textSlices(text: string, entity: Entity): string[] {
+  if (entity.entities.length > 0) {
+    return entity.entities.flatMap((e) => textSlices(text, e));
+  } else {
+    return [text.slice(entity.innerSpan.start, entity.innerSpan.end)];
+  }
+}
+
+Deno.test("addTextSpans should add text spans", () => {
+  let text = `1__2**3**4__5`;
+  let textNodes = textSlices(text, addTextSpans(parseMarkup(text)));
+
+  assertEquals(
+    textNodes,
+    ["1", "2", "3", "4", "5"],
+  );
+});
+
+Deno.test("addTextSpans should add text spans for advanced markup", () => {
+  let text = `
+> 1__2__3
+4 \`\`\`not
+5
+\`\`\` 6
+7
+`.trim();
+  let textNodes = textSlices(text, addTextSpans(parseMarkup(text)));
+  assertEquals(
+    textNodes,
+    ["1", "2", "3", "4 ", "5\n", " 6\n7"],
   );
 });
