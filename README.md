@@ -35,7 +35,7 @@ Just to be clear, many types of benchmarks will favour nevula because of it's sm
 ```
 |Name|Runs|Total (ms)|Average (ms)|
 |:--|--:|--:|--:|
-|nevula|2500|164.982|0.066|
-|nevula with inserted text spans|2500|155.548|0.062|
-|/x/markdown@v2.0.0 (based on an older version of Marked)|2500|333.729|0.133|
+|nevula|2500|153.699|0.061|
+|nevula with inserted text spans|2500|159.208|0.064|
+|/x/markdown@v2.0.0 (based on an older version of Marked)|2500|284.173|0.114|
 <!-- BENCHMARKS END -->

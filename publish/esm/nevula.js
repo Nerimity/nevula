@@ -224,10 +224,7 @@ export function parseMarkup(text) {
 }
 /** modifies an entity's entities to add text spans */
 export function addTextSpans(entity) {
-    var _a, _b;
-    if (entity.entities.length === 0) {
-        return entity;
-    }
+    var _a, _b, _c, _d;
     let entities = [];
     for (let i = 0; i < entity.entities.length; i++) {
         const e = entity.entities[i];
@@ -247,7 +244,7 @@ export function addTextSpans(entity) {
         entities.push(addTextSpans(e));
     }
     const endingTextSpan = {
-        start: entity.entities[entity.entities.length - 1].outerSpan.end,
+        start: (_d = (_c = entity.entities[entity.entities.length - 1]) === null || _c === void 0 ? void 0 : _c.outerSpan.end) !== null && _d !== void 0 ? _d : entity.innerSpan.start,
         end: entity.innerSpan.end,
     };
     if (endingTextSpan.end > endingTextSpan.start) {
