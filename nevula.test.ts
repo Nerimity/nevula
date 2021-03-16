@@ -145,10 +145,13 @@ Deno.test("custom_end should be ignored", () => {
 });
 
 function textSlices(text: string, entity: Entity): string[] {
-  if (entity.entities.length > 0) {
-    return entity.entities.flatMap((e) => textSlices(text, e));
-  } else {
-    return [text.slice(entity.innerSpan.start, entity.innerSpan.end)];
+  switch (entity.type) {
+    case "text":
+      if(entity.entities.length === 0) {
+        return [text.slice(entity.innerSpan.start, entity.innerSpan.end)]
+      }
+    default:
+      return entity.entities.flatMap((e) => textSlices(text, e))
   }
 }
 
@@ -171,6 +174,7 @@ Deno.test("addTextSpans should add text spans for advanced markup", () => {
 7
 `.trim();
   let textNodes = textSlices(text, addTextSpans(parseMarkup(text)));
+  console.log(addTextSpans(parseMarkup(text)))
   assertEquals(
     textNodes,
     ["1", "2", "3", "4 ", "5\n", " 6\n7"],

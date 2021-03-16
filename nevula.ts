@@ -311,9 +311,6 @@ export function parseMarkup(text: string): Entity {
 
 /** modifies an entity's entities to add text spans */
 export function addTextSpans(entity: Entity): Entity {
-  if (entity.entities.length === 0) {
-    return entity;
-  }
 
   let entities: Entity[] = [];
 
@@ -340,7 +337,8 @@ export function addTextSpans(entity: Entity): Entity {
   }
 
   const endingTextSpan = {
-    start: entity.entities[entity.entities.length - 1].outerSpan.end,
+    start: entity.entities[entity.entities.length - 1]?.outerSpan.end ??
+      entity.innerSpan.start,
     end: entity.innerSpan.end,
   };
 
