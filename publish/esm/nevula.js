@@ -165,7 +165,7 @@ export function parseMarkup(text) {
                         end: endToken.index + endToken[0].length,
                     };
                     // get lang param
-                    const langRegex = /\w+\n/g;
+                    const langRegex = /\w+\n/y;
                     langRegex.lastIndex = indice.end;
                     const args = langRegex.exec(text);
                     // remove the \n
@@ -174,7 +174,7 @@ export function parseMarkup(text) {
                         type: "codeblock",
                         // add the lang length to the innerSpan start to skip that when getting the text
                         innerSpan: {
-                            start: indice.end + ((_c = (_b = args === null || args === void 0 ? void 0 : args[0]) === null || _b === void 0 ? void 0 : _b.length) !== null && _c !== void 0 ? _c : 0),
+                            start: indice.end + ((_c = (_b = args === null || args === void 0 ? void 0 : args[0]) === null || _b === void 0 ? void 0 : _b.length) !== null && _c !== void 0 ? _c : 1),
                             end: endIndice.start,
                         },
                         outerSpan: { start: indice.start, end: endIndice.end },

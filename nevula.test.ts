@@ -180,3 +180,21 @@ Deno.test("addTextSpans should add text spans for advanced markup", () => {
     ["1", "2", "3", "4 ", "5\n", " 6\n7"],
   );
 });
+
+Deno.test("codeblocks should work with or without the language specified", () => {
+  let text = `
+\`\`\`js
+let x = 0;
+\`\`\`
+
+\`\`\`
+just text
+\`\`\`
+`.trim();
+  let textNodes = textSlices(text, addTextSpans(parseMarkup(text)));
+  console.log(addTextSpans(parseMarkup(text)))
+  assertEquals(
+    textNodes,
+    ["let x = 0;\n", "\n\n", "just text\n"],
+  );
+});

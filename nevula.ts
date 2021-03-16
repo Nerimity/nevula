@@ -244,7 +244,7 @@ export function parseMarkup(text: string): Entity {
             end: endToken.index! + endToken[0].length,
           };
           // get lang param
-          const langRegex = /\w+\n/g;
+          const langRegex = /\w+\n/y;
           langRegex.lastIndex = indice.end;
           const args = langRegex.exec(text);
           // remove the \n
@@ -254,7 +254,7 @@ export function parseMarkup(text: string): Entity {
             type: "codeblock",
             // add the lang length to the innerSpan start to skip that when getting the text
             innerSpan: {
-              start: indice.end + (args?.[0]?.length ?? 0),
+              start: indice.end + (args?.[0]?.length ?? 1),
               end: endIndice.start,
             },
             outerSpan: { start: indice.start, end: endIndice.end },
