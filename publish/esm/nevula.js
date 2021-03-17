@@ -197,8 +197,8 @@ export function parseMarkup(text) {
                     };
                     entities.push({
                         type: "custom",
-                        innerSpan: { start: endIndice.end, end: indice.start },
-                        outerSpan: { start: endIndice.start, end: indice.end },
+                        innerSpan: { start: indice.end, end: endIndice.start },
+                        outerSpan: { start: indice.start, end: endIndice.end },
                         entities: [],
                         params: { type: token[0].slice(1, -1) },
                     });
