@@ -147,11 +147,11 @@ Deno.test("custom_end should be ignored", () => {
 function textSlices(text: string, entity: Entity): string[] {
   switch (entity.type) {
     case "text":
-      if(entity.entities.length === 0) {
-        return [text.slice(entity.innerSpan.start, entity.innerSpan.end)]
+      if (entity.entities.length === 0) {
+        return [text.slice(entity.innerSpan.start, entity.innerSpan.end)];
       }
     default:
-      return entity.entities.flatMap((e) => textSlices(text, e))
+      return entity.entities.flatMap((e) => textSlices(text, e));
   }
 }
 
@@ -174,7 +174,6 @@ Deno.test("addTextSpans should add text spans for advanced markup", () => {
 7
 `.trim();
   let textNodes = textSlices(text, addTextSpans(parseMarkup(text)));
-  console.log(addTextSpans(parseMarkup(text)))
   assertEquals(
     textNodes,
     ["1", "2", "3", "4 ", "5\n", " 6\n7"],
@@ -192,9 +191,136 @@ just text
 \`\`\`
 `.trim();
   let textNodes = textSlices(text, addTextSpans(parseMarkup(text)));
-  console.log(addTextSpans(parseMarkup(text)))
   assertEquals(
     textNodes,
     ["let x = 0;\n", "\n\n", "just text\n"],
+  );
+});
+
+// testing every type of entity
+type EntitySlice = [string, object, string] | [string, object, EntitySlice[]];
+
+function entitySlices(text: string, entity: Entity): EntitySlice {
+  if (entity.entities.length > 0) {
+    return [
+      entity.type,
+      entity.params,
+      entity.entities.map((e) => entitySlices(text, e)),
+    ];
+  } else {
+    return [
+      entity.type,
+      entity.params,
+      text.slice(entity.innerSpan.start, entity.innerSpan.end),
+    ];
+  }
+}
+
+Deno.test("root text entity should parsed the remaining text", () => {
+  let text = `hello world!`.trim();
+  let textNodes = entitySlices(text, addTextSpans(parseMarkup(text)));
+  assertEquals(
+    textNodes,
+    ["text", {}, [
+      ["text", {}, "hello world!"],
+    ]],
+  );
+});
+
+Deno.test("bold should be parsed", () => {
+  let text = `**hello world!**`.trim();
+  let textNodes = entitySlices(text, addTextSpans(parseMarkup(text)));
+  assertEquals(
+    textNodes,
+    ["text", {}, [["bold", {}, [["text", {}, "hello world!"]]]]],
+  );
+});
+
+Deno.test("italic should be parsed", () => {
+  let text = `//hello world!//`.trim();
+  let textNodes = entitySlices(text, addTextSpans(parseMarkup(text)));
+  assertEquals(
+    textNodes,
+    ["text", {}, [["italic", {}, [["text", {}, "hello world!"]]]]],
+  );
+});
+
+Deno.test("underline should be parsed", () => {
+  let text = `__hello world!__`.trim();
+  let textNodes = entitySlices(text, addTextSpans(parseMarkup(text)));
+  assertEquals(
+    textNodes,
+    ["text", {}, [["underline", {}, [["text", {}, "hello world!"]]]]],
+  );
+});
+
+Deno.test("strikethrough should be parsed", () => {
+  let text = `~~hello world!~~`.trim();
+  let textNodes = entitySlices(text, addTextSpans(parseMarkup(text)));
+  assertEquals(
+    textNodes,
+    ["text", {}, [["strikethrough", {}, [["text", {}, "hello world!"]]]]],
+  );
+});
+
+Deno.test("code should be parsed", () => {
+  let text = "``hello world!``".trim();
+  let textNodes = entitySlices(text, addTextSpans(parseMarkup(text)));
+  assertEquals(
+    textNodes,
+    ["text", {}, [["code", {}, [["text", {}, "hello world!"]]]]],
+  );
+});
+
+Deno.test("code should be parsed", () => {
+  let text = `
+\`\`\`
+hello world!
+\`\`\`
+
+\`\`\`language
+hello world!
+\`\`\`
+`.trim();
+  let textNodes = entitySlices(text, addTextSpans(parseMarkup(text)));
+  assertEquals(
+    textNodes,
+    ["text", {}, [
+      ["codeblock", { lang: undefined }, [["text", {}, "hello world!\n"]]],
+      ["text", {}, "\n\n"],
+      [
+        "codeblock",
+        { lang: "language" },
+        [["text", {}, "hello world!\n"]],
+      ],
+    ]],
+  );
+});
+
+Deno.test("blockquote should be parsed 'inline'", () => {
+  let text = "> hello world!".trim();
+  let textNodes = entitySlices(text, addTextSpans(parseMarkup(text)));
+  assertEquals(
+    textNodes,
+    ["text", {}, [["blockquote", {}, [["text", {}, "hello world!"]]]]],
+  );
+});
+
+Deno.test("blockquote should be parsed", () => {
+  let text = "\n> hello world!\n";
+  let textNodes = entitySlices(text, addTextSpans(parseMarkup(text)));
+  assertEquals(
+    textNodes,
+    ["text", {}, [["blockquote", {}, [["text", {}, "hello world!"]]]]],
+  );
+});
+
+Deno.test("custom entities should be parsed", () => {
+  let text = "[name: hello world!]";
+  let textNodes = entitySlices(text, addTextSpans(parseMarkup(text)));
+  console.log(parseMarkup(text));
+  assertEquals(
+    textNodes,
+    ["text", {}, [["custom", { type: "name" }, [["text", {}, " hello world!"]]]]],
   );
 });
