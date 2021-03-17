@@ -318,9 +318,17 @@ Deno.test("blockquote should be parsed", () => {
 Deno.test("custom entities should be parsed", () => {
   let text = "[name: hello world!]";
   let textNodes = entitySlices(text, addTextSpans(parseMarkup(text)));
-  console.log(parseMarkup(text));
   assertEquals(
     textNodes,
     ["text", {}, [["custom", { type: "name" }, [["text", {}, " hello world!"]]]]],
+  );
+});
+
+Deno.test("custom entities a single symbol should be parsed", () => {
+  let text = "[@: hello world!]";
+  let textNodes = entitySlices(text, addTextSpans(parseMarkup(text)));
+  assertEquals(
+    textNodes,
+    ["text", {}, [["custom", { type: "@" }, [["text", {}, " hello world!"]]]]],
   );
 });

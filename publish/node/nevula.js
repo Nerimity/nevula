@@ -49,7 +49,7 @@ const TOKEN_PARTS = {
     strikethrough: /~~/,
     codeblock: /```/,
     code: /``/,
-    custom_start: /\[\w+:/,
+    custom_start: /\[(?:.|\w+):/,
     custom_end: /]/,
     newline: /\n/,
 };
