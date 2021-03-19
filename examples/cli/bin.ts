@@ -54,8 +54,40 @@ function transformEntity(entity: Entity, ctx: Context): string {
   }
 }
 
-function transformCustomEntity(enttiy: Entity, ctx: Context) {
-  return sliceText(ctx, enttiy.outerSpan);
+type CustomEntity = Entity & { type: "custom" };
+
+function transformCustomEntity(entity: CustomEntity, ctx: Context) {
+  const expr = sliceText(ctx, entity.innerSpan);
+  switch (entity.params.type) {
+    case "link": {
+      const match = expr.match(/(.+)->(.+)/);
+      if (match) {
+        const url = match[1].trim();
+        const text = match[2].trim();
+        return h("a", { href: url }, text);
+      } else {
+        const link = expr.trim();
+        return h("a", { href: link }, link);
+      }
+    }
+    case "ruby": {
+      let output = [];
+      for (const match of expr.matchAll(/(.+?)\((.*?)\)/g)) {
+        const text = match[1].trim();
+        const annotation = match[2].trim();
+
+        output.push(
+          text,
+          h("rp", {}, "("),
+          h("rt", {}, annotation),
+          h("rp", {}, ")"),
+        );
+      }
+
+      return h("ruby", {}, output);
+    }
+  }
+  return sliceText(ctx, entity.outerSpan);
 }
 
 // actual cli app
