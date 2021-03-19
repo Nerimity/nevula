@@ -91,7 +91,7 @@ const TOKEN_PARTS = {
   code: /``/,
   custom_start: /\[(?:.|\w+):/,
   custom_end: /]/,
-  newline: /\n/,
+  newline: /\r?\n/,
 };
 
 // todo: manually do this
@@ -244,7 +244,7 @@ export function parseMarkup(text: string): Entity {
             end: endToken.index! + endToken[0].length,
           };
           // get lang param
-          const langRegex = /\w+\n/y;
+          const langRegex = /\w+\r?\n/y;
           langRegex.lastIndex = indice.end;
           const args = langRegex.exec(text);
           // remove the \n
@@ -311,7 +311,6 @@ export function parseMarkup(text: string): Entity {
 
 /** modifies an entity's entities to add text spans */
 export function addTextSpans(entity: Entity): Entity {
-
   let entities: Entity[] = [];
 
   for (let i = 0; i < entity.entities.length; i++) {

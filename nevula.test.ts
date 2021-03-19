@@ -201,19 +201,18 @@ just text
 type EntitySlice = [string, object, string] | [string, object, EntitySlice[]];
 
 function entitySlices(text: string, entity: Entity): EntitySlice {
-  if (entity.entities.length > 0) {
-    return [
-      entity.type,
-      entity.params,
-      entity.entities.map((e) => entitySlices(text, e)),
-    ];
-  } else {
+  if (entity.type === "text" && entity.entities.length === 0) {
     return [
       entity.type,
       entity.params,
       text.slice(entity.innerSpan.start, entity.innerSpan.end),
     ];
   }
+  return [
+    entity.type,
+    entity.params,
+    entity.entities.map((e) => entitySlices(text, e)),
+  ];
 }
 
 Deno.test("root text entity should parsed the remaining text", () => {
@@ -315,12 +314,29 @@ Deno.test("blockquote should be parsed", () => {
   );
 });
 
+Deno.test("blockquote should be parsed with multiple", () => {
+  let text = "\n> hello world!\n> hello world 2!";
+  let textNodes = entitySlices(text, addTextSpans(parseMarkup(text)));
+  assertEquals(
+    textNodes,
+    ["text", {}, [["blockquote", {}, [["text", {}, "hello world!"]]], [
+      "blockquote",
+      {},
+      [["text", {}, "hello world 2!"]],
+    ]]],
+  );
+});
+
 Deno.test("custom entities should be parsed", () => {
   let text = "[name: hello world!]";
   let textNodes = entitySlices(text, addTextSpans(parseMarkup(text)));
   assertEquals(
     textNodes,
-    ["text", {}, [["custom", { type: "name" }, [["text", {}, " hello world!"]]]]],
+    ["text", {}, [["custom", { type: "name" }, [[
+      "text",
+      {},
+      " hello world!",
+    ]]]]],
   );
 });
 
