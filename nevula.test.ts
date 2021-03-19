@@ -285,7 +285,7 @@ hello world!
   assertEquals(
     textNodes,
     ["text", {}, [
-      ["codeblock", { lang: undefined }, [["text", {}, "hello world!\n"]]],
+      ["codeblock", { lang: "" }, [["text", {}, "hello world!\n"]]],
       ["text", {}, "\n\n"],
       [
         "codeblock",
