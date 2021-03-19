@@ -1,0 +1,11 @@
+normal text
+**bold**
+//italic//
+__underline__
+``code``
+```codeblock```
+[ruby: ブリー(Bree) ]
+[link: https://google.com -> custom link alias ]
+> blockquote
+Example:```> normal **bold //italic// __under``__line__``__**```
+> normal **bold //italic// __under``__line__``__**
