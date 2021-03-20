@@ -220,9 +220,7 @@ Deno.test("root text entity should parsed the remaining text", () => {
   let textNodes = entitySlices(text, addTextSpans(parseMarkup(text)));
   assertEquals(
     textNodes,
-    ["text", {}, [
-      ["text", {}, "hello world!"],
-    ]],
+    ["text", {}, "hello world!"],
   );
 });
 

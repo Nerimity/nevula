@@ -311,6 +311,10 @@ export function parseMarkup(text: string): Entity {
 
 /** modifies an entity's entities to add text spans */
 export function addTextSpans(entity: Entity): Entity {
+  if(entity.entities.length === 0 && entity.type === 'text') {
+    return entity
+  }
+
   let entities: Entity[] = [];
 
   for (let i = 0; i < entity.entities.length; i++) {
