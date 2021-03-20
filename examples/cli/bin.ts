@@ -23,7 +23,7 @@ function transformEntity(entity: Entity, ctx: Context): string {
       if (entity.entities.length > 0) {
         return transformEntities(entity.entities, ctx).join("");
       } else {
-        return sliceText(ctx, entity.outerSpan);
+        return sliceText(ctx, entity.innerSpan);
       }
     }
     case "bold":

@@ -83,6 +83,7 @@ function generateMapping<T extends string>(parts: Record<T, RegExp>): T[] {
 }
 
 const TOKEN_PARTS = {
+  escape: /\\[\\*/_~`\[\]]/,
   bold: /\*\*/,
   italic: /\/\//,
   underline: /__/,
@@ -214,17 +215,27 @@ export function parseMarkup(text: string): Entity {
           i > pos && tokenType(t) === "code"
         );
         if (markerIndex >= 0) {
+          const escapes = tokens.slice(pos, markerIndex).filter((e) =>
+            tokenType(e) === "escape"
+          );
           const endToken = tokens[markerIndex];
           const endIndice: Span = {
             start: endToken.index!,
             end: endToken.index! + endToken[0].length,
           };
 
+          // todo: write a better system that's more generalized for escaping
           entities.push({
             type: "code",
             innerSpan: { start: indice.end, end: endIndice.start },
             outerSpan: { start: indice.start, end: endIndice.end },
-            entities: [],
+            entities: escapes.map((m) => ({
+              type: "text",
+              innerSpan: { start: m.index! + 1, end: m.index! + m[0].length },
+              outerSpan: { start: m.index!, end: m.index! + m[0].length },
+              entities: [],
+              params: {},
+            })),
             params: {},
           });
 
@@ -238,6 +249,9 @@ export function parseMarkup(text: string): Entity {
           i > pos && tokenType(t) === "codeblock"
         );
         if (markerIndex >= 0) {
+          const escapes = tokens.slice(pos, markerIndex).filter((e) =>
+            tokenType(e) === "escape"
+          );
           const endToken = tokens[markerIndex];
           const endIndice: Span = {
             start: endToken.index!,
@@ -258,7 +272,13 @@ export function parseMarkup(text: string): Entity {
               end: endIndice.start,
             },
             outerSpan: { start: indice.start, end: endIndice.end },
-            entities: [],
+            entities: escapes.map((m) => ({
+              type: "text",
+              innerSpan: { start: m.index! + 1, end: m.index! + m[0].length },
+              outerSpan: { start: m.index!, end: m.index! + m[0].length },
+              entities: [],
+              params: {},
+            })),
             params: {
               lang: lang,
             },
@@ -273,6 +293,9 @@ export function parseMarkup(text: string): Entity {
           i > pos && tokenType(t) === "custom_end"
         );
         if (markerIndex >= 0) {
+          const escapes = tokens.slice(pos, markerIndex).filter((e) =>
+            tokenType(e) === "escape"
+          );
           const endToken = tokens[markerIndex];
           const endIndice: Span = {
             start: endToken.index!,
@@ -283,12 +306,29 @@ export function parseMarkup(text: string): Entity {
             type: "custom",
             innerSpan: { start: indice.end, end: endIndice.start },
             outerSpan: { start: indice.start, end: endIndice.end },
-            entities: [],
+            entities: escapes.map((m) => ({
+              type: "text",
+              innerSpan: { start: m.index! + 1, end: m.index! + m[0].length },
+              outerSpan: { start: m.index!, end: m.index! + m[0].length },
+              entities: [],
+              params: {},
+            })),
             params: { type: token[0].slice(1, -1) },
           });
 
           pos = markerIndex;
         }
+        break;
+      }
+      case "escape": {
+        const span = { start: indice.start + 1, end: indice.end };
+        entities.push({
+          type: "text",
+          innerSpan: span,
+          outerSpan: indice,
+          entities: [],
+          params: {},
+        });
         break;
       }
       // skip custom_end, it's not used for matching anything behind it
@@ -311,8 +351,8 @@ export function parseMarkup(text: string): Entity {
 
 /** modifies an entity's entities to add text spans */
 export function addTextSpans(entity: Entity): Entity {
-  if(entity.entities.length === 0 && entity.type === 'text') {
-    return entity
+  if (entity.entities.length === 0 && entity.type === "text") {
+    return entity;
   }
 
   let entities: Entity[] = [];

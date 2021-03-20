@@ -346,3 +346,60 @@ Deno.test("custom entities a single symbol should be parsed", () => {
     ["text", {}, [["custom", { type: "@" }, [["text", {}, " hello world!"]]]]],
   );
 });
+
+Deno.test("escapes should escape entities", () => {
+  let text = String.raw`\[@: hello world!]`;
+  let textNodes = entitySlices(text, addTextSpans(parseMarkup(text)));
+  assertEquals(
+    textNodes,
+    ["text", {}, [
+      ["text", {}, "["],
+      ["text", {}, "@: hello world!]"],
+    ]],
+  );
+});
+
+Deno.test("escapes should escape in code entities", () => {
+  let text = "`` hello \\`` world! ``";
+  let textNodes = entitySlices(text, addTextSpans(parseMarkup(text)));
+  assertEquals(
+    textNodes,
+    ["text", {}, [
+      ["code", {}, [
+        ["text", {}, " hello "],
+        ["text", {}, "`"],
+        ["text", {}, "` world! "],
+      ]],
+    ]],
+  );
+});
+
+Deno.test("escapes should escape in codelock entities", () => {
+  let text = "``` hello \\``` world! ```";
+  let textNodes = entitySlices(text, addTextSpans(parseMarkup(text)));
+  assertEquals(
+    textNodes,
+    ["text", {}, [
+      ["codeblock", { lang: undefined }, [
+        ["text", {}, " hello "],
+        ["text", {}, "`"],
+        ["text", {}, "`` world! "],
+      ]],
+    ]],
+  );
+});
+
+Deno.test("escapes should escape in expression entities", () => {
+  let text = "[name: hello \\] world! ]";
+  let textNodes = entitySlices(text, addTextSpans(parseMarkup(text)));
+  assertEquals(
+    textNodes,
+    ["text", {}, [
+      ["custom", { type: "name" }, [
+        ["text", {}, " hello "],
+        ["text", {}, "]"],
+        ["text", {}, " world! "],
+      ]],
+    ]],
+  );
+});
