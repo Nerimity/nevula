@@ -8,5 +8,6 @@ __underline__
 お[ruby:　元気(げんき)　]ですか
 [link: https://example.com -> custom link alias ]
 > blockquote
-Example:``> normal **bold //italic// __under\``__line__\``__**``
+Example:
+``> normal **bold //italic// __under\``__line__\``__**``
 > normal **bold //italic// __under``__line__``__**
