@@ -43,6 +43,7 @@ function generateMapping(parts) {
     return [...Object.keys(parts)];
 }
 const TOKEN_PARTS = {
+    escape: /\\[\\*/_~`\[\]]/,
     bold: /\*\*/,
     italic: /\/\//,
     underline: /__/,
@@ -51,7 +52,7 @@ const TOKEN_PARTS = {
     code: /``/,
     custom_start: /\[(?:.|\w+):/,
     custom_end: /]/,
-    newline: /\n/,
+    newline: /\r?\n/,
 };
 // todo: manually do this
 const TOKENS = generateRegex(TOKEN_PARTS);
@@ -145,16 +146,24 @@ function parseMarkup(text) {
                 // because code doesn't have innerEntities, we can skip parsing those tokens
                 const markerIndex = tokens.findIndex((t, i) => i > pos && tokenType(t) === "code");
                 if (markerIndex >= 0) {
+                    const escapes = tokens.slice(pos, markerIndex).filter((e) => tokenType(e) === "escape");
                     const endToken = tokens[markerIndex];
                     const endIndice = {
                         start: endToken.index,
                         end: endToken.index + endToken[0].length,
                     };
+                    // todo: write a better system that's more generalized for escaping
                     entities.push({
                         type: "code",
                         innerSpan: { start: indice.end, end: endIndice.start },
                         outerSpan: { start: indice.start, end: endIndice.end },
-                        entities: [],
+                        entities: escapes.map((m) => ({
+                            type: "text",
+                            innerSpan: { start: m.index + 1, end: m.index + m[0].length },
+                            outerSpan: { start: m.index, end: m.index + m[0].length },
+                            entities: [],
+                            params: {},
+                        })),
                         params: {},
                     });
                     pos = markerIndex;
@@ -165,13 +174,14 @@ function parseMarkup(text) {
                 // find the matching token
                 const markerIndex = tokens.findIndex((t, i) => i > pos && tokenType(t) === "codeblock");
                 if (markerIndex >= 0) {
+                    const escapes = tokens.slice(pos, markerIndex).filter((e) => tokenType(e) === "escape");
                     const endToken = tokens[markerIndex];
                     const endIndice = {
                         start: endToken.index,
                         end: endToken.index + endToken[0].length,
                     };
                     // get lang param
-                    const langRegex = /\w+\n/y;
+                    const langRegex = /\w*\r?\n/y;
                     langRegex.lastIndex = indice.end;
                     const args = langRegex.exec(text);
                     // remove the \n
@@ -180,11 +190,17 @@ function parseMarkup(text) {
                         type: "codeblock",
                         // add the lang length to the innerSpan start to skip that when getting the text
                         innerSpan: {
-                            start: indice.end + ((_c = (_b = args === null || args === void 0 ? void 0 : args[0]) === null || _b === void 0 ? void 0 : _b.length) !== null && _c !== void 0 ? _c : 1),
+                            start: indice.end + ((_c = (_b = args === null || args === void 0 ? void 0 : args[0]) === null || _b === void 0 ? void 0 : _b.length) !== null && _c !== void 0 ? _c : 0),
                             end: endIndice.start,
                         },
                         outerSpan: { start: indice.start, end: endIndice.end },
-                        entities: [],
+                        entities: escapes.map((m) => ({
+                            type: "text",
+                            innerSpan: { start: m.index + 1, end: m.index + m[0].length },
+                            outerSpan: { start: m.index, end: m.index + m[0].length },
+                            entities: [],
+                            params: {},
+                        })),
                         params: {
                             lang: lang,
                         },
@@ -196,6 +212,7 @@ function parseMarkup(text) {
             case "custom_start": {
                 const markerIndex = tokens.findIndex((t, i) => i > pos && tokenType(t) === "custom_end");
                 if (markerIndex >= 0) {
+                    const escapes = tokens.slice(pos, markerIndex).filter((e) => tokenType(e) === "escape");
                     const endToken = tokens[markerIndex];
                     const endIndice = {
                         start: endToken.index,
@@ -205,11 +222,28 @@ function parseMarkup(text) {
                         type: "custom",
                         innerSpan: { start: indice.end, end: endIndice.start },
                         outerSpan: { start: indice.start, end: endIndice.end },
-                        entities: [],
+                        entities: escapes.map((m) => ({
+                            type: "text",
+                            innerSpan: { start: m.index + 1, end: m.index + m[0].length },
+                            outerSpan: { start: m.index, end: m.index + m[0].length },
+                            entities: [],
+                            params: {},
+                        })),
                         params: { type: token[0].slice(1, -1) },
                     });
                     pos = markerIndex;
                 }
+                break;
+            }
+            case "escape": {
+                const span = { start: indice.start + 1, end: indice.end };
+                entities.push({
+                    type: "text",
+                    innerSpan: span,
+                    outerSpan: indice,
+                    entities: [],
+                    params: {},
+                });
                 break;
             }
             // skip custom_end, it's not used for matching anything behind it
@@ -232,6 +266,9 @@ exports.parseMarkup = parseMarkup;
 /** modifies an entity's entities to add text spans */
 function addTextSpans(entity) {
     var _a, _b, _c, _d;
+    if (entity.entities.length === 0 && entity.type === "text") {
+        return entity;
+    }
     let entities = [];
     for (let i = 0; i < entity.entities.length; i++) {
         const e = entity.entities[i];
