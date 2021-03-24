@@ -403,3 +403,18 @@ Deno.test("escapes should escape in expression entities", () => {
     ]],
   );
 });
+
+Deno.test("blockquotes should have entities inside of them", () => {
+  let text = "> **hello world!**";
+  let textNodes = entitySlices(text, addTextSpans(parseMarkup(text)));
+  assertEquals(
+    textNodes,
+    ["text", {}, [
+      ["blockquote", {}, [
+        ["bold", {}, [
+          ["text", {}, "hello world!"],
+        ]],
+      ]],
+    ]],
+  );
+});

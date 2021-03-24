@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.addTextSpans = exports.parseMarkup = exports.partition = exports.UnreachableCaseError = exports.containsSpan = void 0;
 /** Checks if `largeSpan` can contain `smallSpan` */
 function containsSpan(largeSpan, smallSpan) {
-    return largeSpan.start < smallSpan.start && smallSpan.end < largeSpan.end;
+    return largeSpan.start <= smallSpan.start && smallSpan.end <= largeSpan.end;
 }
 exports.containsSpan = containsSpan;
 /** Assertion util for the ts compiler to tell it that it should never happen */

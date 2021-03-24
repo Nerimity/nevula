@@ -1,6 +1,6 @@
 /** Checks if `largeSpan` can contain `smallSpan` */
 export function containsSpan(largeSpan, smallSpan) {
-    return largeSpan.start < smallSpan.start && smallSpan.end < largeSpan.end;
+    return largeSpan.start <= smallSpan.start && smallSpan.end <= largeSpan.end;
 }
 /** Assertion util for the ts compiler to tell it that it should never happen */
 export class UnreachableCaseError extends Error {
