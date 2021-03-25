@@ -49,6 +49,8 @@ export type Entity =
   | EntityType<"underline">
   | EntityType<"strikethrough">
   | EntityType<"code">
+  | EntityType<"emoji">
+  | EntityType<"emoji_name">
   | EntityType<"codeblock", {
     // todo: describe better
     /** What language highlighting should be used to highlight the codeblock */
@@ -74,7 +76,7 @@ const generateRegex = (parts: Record<string, RegExp>) => {
     Object.entries(parts)
       .map(([type, pattern]) => `(${pattern.source})`)
       .join("|"),
-    "g",
+    "gu",
   );
 };
 
@@ -90,8 +92,10 @@ const TOKEN_PARTS = {
   strikethrough: /~~/,
   codeblock: /```/,
   code: /``/,
+  emoji: /\p{Emoji_Presentation}/,
   custom_start: /\[(?:.|\w+):/,
-  custom_end: /]/,
+  custom_end: /\]/,
+  emoji_name: /:\w+:/,
   newline: /\r?\n/,
 };
 
@@ -175,6 +179,26 @@ export function parseMarkup(text: string): Entity {
       case "newline":
         parseLine(indice);
         break;
+      case "emoji_name": {
+        entities.push({
+          type,
+          innerSpan: { start: indice.start + 1, end: indice.end - 1 },
+          outerSpan: indice,
+          entities: [],
+          params: {},
+        });
+        break;
+      }
+      case "emoji": {
+        entities.push({
+          type,
+          innerSpan: indice,
+          outerSpan: indice,
+          entities: [],
+          params: {},
+        });
+        break;
+      }
       case "bold":
       case "italic":
       case "underline":

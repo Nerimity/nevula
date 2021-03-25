@@ -418,3 +418,33 @@ Deno.test("blockquotes should have entities inside of them", () => {
     ]],
   );
 });
+
+Deno.test("emojis should be parsed", () => {
+  let text = "hello ✨ world";
+  let textNodes = entitySlices(text, addTextSpans(parseMarkup(text)));
+  assertEquals(
+    textNodes,
+    ["text", {}, [
+      ["text", {}, "hello "],
+      ["emoji", {}, [
+        ["text", {}, "✨"],
+      ]],
+      ["text", {}, " world"],
+    ]],
+  );
+});
+
+Deno.test("emoji names should be parsed", () => {
+  let text = "hello :sparkles: world";
+  let textNodes = entitySlices(text, addTextSpans(parseMarkup(text)));
+  assertEquals(
+    textNodes,
+    ["text", {}, [
+      ["text", {}, "hello "],
+      ["emoji_name", {}, [
+        ["text", {}, "sparkles"],
+      ]],
+      ["text", {}, " world"],
+    ]],
+  );
+});

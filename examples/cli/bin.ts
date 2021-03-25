@@ -13,6 +13,14 @@ interface Context {
   text: string;
 }
 
+const EMOJI_NAMES: Record<string, string> = {
+  sparkles: "✨",
+};
+
+const EMOJI_NAMES_REV: Record<string, string> = {
+  "✨": "sparkles",
+};
+
 const sliceText = (ctx: Context, span: Span) =>
   ctx.text.slice(span.start, span.end);
 
@@ -26,6 +34,23 @@ function transformEntity(entity: Entity, ctx: Context): string {
         return transformEntities(entity.entities, ctx).join("");
       } else {
         return sliceText(ctx, entity.innerSpan);
+      }
+    }
+    case "emoji": {
+      let emoji = sliceText(ctx, entity.innerSpan);
+      let name = EMOJI_NAMES_REV[emoji];
+      if (name) {
+        return h("span", { class: `emoji-${name}` }, emoji);
+      } else {
+        return emoji;
+      }
+    }
+    case "emoji_name": {
+      let name = sliceText(ctx, entity.innerSpan);
+      if (name in EMOJI_NAMES) {
+        return h("span", { class: `emoji-${name}` }, EMOJI_NAMES[name]);
+      } else {
+        return sliceText(ctx, entity.outerSpan);
       }
     }
     case "bold":
