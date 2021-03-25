@@ -14,7 +14,7 @@ import {
 
 import { Marked } from "https://deno.land/x/markdown@v2.0.0/mod.ts";
 
-import { addTextSpans, parseMarkup } from "./nevula.ts";
+import { addTextSpans, parseMarkup } from "./markup.ts";
 
 const RUNS = 2500;
 
@@ -31,7 +31,7 @@ const INITIAL_SAMPLE = `
 const SAMPLE = INITIAL_SAMPLE.repeat(7);
 
 bench({
-  name: "nevula",
+  name: "nertivia markup",
   runs: RUNS,
   func(b): void {
     b.start();
@@ -41,7 +41,7 @@ bench({
 });
 
 bench({
-  name: "nevula with inserted text spans",
+  name: "nertivia markup with inserted text spans",
   runs: RUNS,
   func(b): void {
     b.start();

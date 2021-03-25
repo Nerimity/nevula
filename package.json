@@ -1,15 +1,15 @@
 {
-  "name": "nevula",
+  "name": "@nertivia/markup",
   "version": "0.5.1",
-  "description": "A (relatively) simple and (hopefully) performant markup parser",
-  "main": "publish/node/nevula.js",
-  "browser": "publish/esm/nevula.js",
-  "types": "publish/esm/nevula.d.ts",
-  "repository": "https://github.com/Brecert/nevula.git",
+  "description": "A (relatively) simple and (hopefully) performant markup parser made for nertivia",
+  "main": "publish/node/markup.js",
+  "browser": "publish/esm/markup.js",
+  "types": "publish/esm/markup.d.ts",
+  "repository": "https://github.com/Nertivia/markup.git",
   "author": "brecert <11599528+Brecert@users.noreply.github.com>",
   "license": "MIT",
   "files": [
-    "nevula.ts",
+    "markup.ts",
     "publish/esm/*",
     "publish/node/*"
   ],
@@ -21,7 +21,8 @@
   "keywords": [
     "markup",
     "language",
-    "parser"
+    "parser",
+    "nertivia"
   ],
   "devDependencies": {
     "typescript": "^4.2.3"

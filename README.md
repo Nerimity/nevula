@@ -1,7 +1,7 @@
-# nevula
-> A (relatively) simple and (hopefully) performant markup parser.
+# nertivia markup
+> A (relatively) simple and (hopefully) performant markup parser made for nertivia.
 
-**Please note, this is not a markdown parser, this is it's own special markup format called nevula, a specification for this format is a work in progress.**
+**Please note, this is not a markdown parser, this is it's own special markup format, a specification for this format is a work in progress.**
 
 This project has grown out of a need for a relatively simple renderer agnostic, reasonably performant markup parser with a relatively small code size.
 
@@ -19,7 +19,7 @@ an example of this is the italic syntax, `//` looks slanted like italicized text
 see: [Benchmarks](#Benchmarks)
 
 # Benchmarks
-Just to be clear, many types of benchmarks will favour nevula because of it's smaller surface area compared to something like a full markdown parser.
+Just to be clear, many types of benchmarks will favour this markup because of it's smaller surface area compared to something like a full markdown parser.
 
 <!-- BENCHMARKS START -->
 ## Simple Markup
@@ -35,7 +35,7 @@ Just to be clear, many types of benchmarks will favour nevula because of it's sm
 ```
 |Name|Runs|Total (ms)|Average (ms)|
 |:--|--:|--:|--:|
-|nevula|2500|153.699|0.061|
-|nevula with inserted text spans|2500|159.208|0.064|
-|/x/markdown@v2.0.0 (based on an older version of Marked)|2500|284.173|0.114|
+|nertivia markup|2500|155.095|0.062|
+|nertivia markup with inserted text spans|2500|174.891|0.070|
+|/x/markdown@v2.0.0 (based on an older version of Marked)|2500|275.923|0.110|
 <!-- BENCHMARKS END -->

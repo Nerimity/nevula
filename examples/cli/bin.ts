@@ -1,3 +1,5 @@
+// deno run -A ./examples/cli/bin.ts examples/example.nv examples/cli/example.out.html
+
 import h from "https://cdn.skypack.dev/vhtml?dts";
 import {
   addTextSpans,
@@ -5,7 +7,7 @@ import {
   parseMarkup,
   Span,
   UnreachableCaseError,
-} from "../../nevula.ts";
+} from "../../markup.ts";
 
 interface Context {
   text: string;
@@ -103,7 +105,7 @@ const entity = addTextSpans(parseMarkup(file));
 const html = `
 <html>
   <head>
-    <title>nevula markup cli example</title>
+    <title>nertivia markup cli example</title>
   </head>
   <body style="white-space: pre-line">
     ${transformEntity(entity, { text: file })}
