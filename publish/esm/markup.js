@@ -31,7 +31,7 @@ const generateRegex = (parts) => {
     // todo: named grouped regexep's can be slow
     return RegExp(Object.entries(parts)
         .map(([type, pattern]) => `(${pattern.source})`)
-        .join("|"), "g");
+        .join("|"), "gu");
 };
 function generateMapping(parts) {
     return [...Object.keys(parts)];
@@ -44,8 +44,10 @@ const TOKEN_PARTS = {
     strikethrough: /~~/,
     codeblock: /```/,
     code: /``/,
+    emoji: /\p{Emoji_Presentation}/,
     custom_start: /\[(?:.|\w+):/,
-    custom_end: /]/,
+    custom_end: /\]/,
+    emoji_name: /:\w+:/,
     newline: /\r?\n/,
 };
 // todo: manually do this
@@ -108,6 +110,26 @@ export function parseMarkup(text) {
             case "newline":
                 parseLine(indice);
                 break;
+            case "emoji_name": {
+                entities.push({
+                    type,
+                    innerSpan: { start: indice.start + 1, end: indice.end - 1 },
+                    outerSpan: indice,
+                    entities: [],
+                    params: {},
+                });
+                break;
+            }
+            case "emoji": {
+                entities.push({
+                    type,
+                    innerSpan: indice,
+                    outerSpan: indice,
+                    entities: [],
+                    params: {},
+                });
+                break;
+            }
             case "bold":
             case "italic":
             case "underline":
