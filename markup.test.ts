@@ -448,3 +448,18 @@ Deno.test("emoji names should be parsed", () => {
     ]],
   );
 });
+
+Deno.test("links should be parsed", () => {
+  let text = "hello https://example.com world";
+  let textNodes = entitySlices(text, addTextSpans(parseMarkup(text)));
+  assertEquals(
+    textNodes,
+    ["text", {}, [
+      ["text", {}, "hello "],
+      ["link", {}, [
+        ["text", {}, "https://example.com"],
+      ]],
+      ["text", {}, " world"],
+    ]],
+  );
+});

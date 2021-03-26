@@ -44,6 +44,7 @@ export type EntityType<N, T = {}> = {
 /** A text entity */
 export type Entity =
   | EntityType<"text">
+  | EntityType<"link">
   | EntityType<"bold">
   | EntityType<"italic">
   | EntityType<"underline">
@@ -92,6 +93,7 @@ const TOKEN_PARTS = {
   strikethrough: /~~/,
   codeblock: /```/,
   code: /``/,
+  link: /https?:\/\/\S+\.\S+/,
   emoji: /\p{Emoji_Presentation}/,
   custom_start: /\[(?:.|\w+):/,
   custom_end: /\]/,
@@ -342,6 +344,16 @@ export function parseMarkup(text: string): Entity {
 
           pos = markerIndex;
         }
+        break;
+      }
+      case "link": {
+        entities.push({
+          type: "link",
+          innerSpan: indice,
+          outerSpan: indice,
+          entities: [],
+          params: {},
+        });
         break;
       }
       case "escape": {

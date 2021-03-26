@@ -75,8 +75,12 @@ function transformEntity(entity: Entity, ctx: Context): string {
     case "custom": {
       return transformCustomEntity(entity, ctx);
     }
+    case "link": {
+      const url = sliceText(ctx, entity.innerSpan)
+      return h("a", { href: url }, url)
+    }
     default: {
-      throw new UnreachableCaseError(entity["type"] as never);
+      throw new UnreachableCaseError(entity);
     }
   }
 }

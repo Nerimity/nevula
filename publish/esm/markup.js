@@ -44,6 +44,7 @@ const TOKEN_PARTS = {
     strikethrough: /~~/,
     codeblock: /```/,
     code: /``/,
+    link: /https?:\/\/\S+\.\S+/,
     emoji: /\p{Emoji_Presentation}/,
     custom_start: /\[(?:.|\w+):/,
     custom_end: /\]/,
@@ -249,6 +250,16 @@ export function parseMarkup(text) {
                     });
                     pos = markerIndex;
                 }
+                break;
+            }
+            case "link": {
+                entities.push({
+                    type: "link",
+                    innerSpan: indice,
+                    outerSpan: indice,
+                    entities: [],
+                    params: {},
+                });
                 break;
             }
             case "escape": {
