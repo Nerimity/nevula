@@ -93,7 +93,7 @@ const TOKEN_PARTS = {
   strikethrough: /~~/,
   codeblock: /```/,
   code: /``/,
-  link: /https?:\/\/\S+\.\S+/,
+  link: /https?:\/\/\S+\.[\p{Alphabetic}\\=+&%@;!._~-]+/,
   emoji: /\p{Emoji_Presentation}/,
   custom_start: /\[(?:.|\w+):/,
   custom_end: /\]/,
