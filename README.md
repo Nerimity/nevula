@@ -35,7 +35,7 @@ Just to be clear, many types of benchmarks will favour this markup because of it
 ```
 |Name|Runs|Total (ms)|Average (ms)|
 |:--|--:|--:|--:|
-|nertivia markup|2500|204.801|0.082|
-|nertivia markup with inserted text spans|2500|200.790|0.080|
-|/x/markdown@v2.0.0 (based on an older version of Marked)|2500|355.435|0.142|
+|nertivia markup|2500|207.814|0.083|
+|nertivia markup with inserted text spans|2500|201.809|0.081|
+|/x/markdown@v2.0.0 (based on an older version of Marked)|2500|358.297|0.143|
 <!-- BENCHMARKS END -->

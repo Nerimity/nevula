@@ -493,3 +493,18 @@ Deno.test("links should parse unwanted symbols", () => {
     ]],
   );
 });
+
+Deno.test("links should parse a full url", () => {
+  let text = "hello https://example.com/example?example=123) world";
+  let textNodes = entitySlices(text, addTextSpans(parseMarkup(text)));
+  assertEquals(
+    textNodes,
+    ["text", {}, [
+      ["text", {}, "hello "],
+      ["link", {}, [
+        ["text", {}, "https://example.com/example?example=123"],
+      ]],
+      ["text", {}, ") world"],
+    ]],
+  );
+});
