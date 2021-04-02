@@ -434,6 +434,21 @@ Deno.test("emojis should be parsed", () => {
   );
 });
 
+Deno.test("emojis combinations should be parsed", () => {
+  let text = "hello 🏳️‍🌈1️⃣👋🏽 1 world";
+  let textNodes = entitySlices(text, addTextSpans(parseMarkup(text)));
+  assertEquals(
+    textNodes,
+    ["text", {}, [
+      ["text", {}, "hello "],
+      ["emoji", {}, [["text", {}, "🏳️‍🌈"]]],
+      ["emoji", {}, [["text", {}, "1️⃣"]]],
+      ["emoji", {}, [["text", {}, "👋🏽"]]],
+      ["text", {}, " 1 world"],
+    ]],
+  );
+});
+
 Deno.test("emoji names should be parsed", () => {
   let text = "hello :sparkles: world";
   let textNodes = entitySlices(text, addTextSpans(parseMarkup(text)));

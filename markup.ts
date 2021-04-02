@@ -1,3 +1,7 @@
+// generated from: https://github.com/brecert/unicode-emoji-regex
+const EMOJI_SEQUENCE =
+  /(?:(?:(?:(?:\p{Emoji})(?:\u{FE0F}))|(?:(?:\p{Emoji_Modifier_Base})(?:\p{Emoji_Modifier}))|(?:\p{Emoji}))(?:[\u{E0020}-\u{E007E}]+)(?:\u{E007F}))|(?:(?:(?:(?:\p{Emoji_Modifier_Base})(?:\p{Emoji_Modifier}))|(?:(?:\p{Emoji})(?:\u{FE0F}))|(?:\p{Emoji}))(?:(?:\u{200d})(?:(?:(?:\p{Emoji_Modifier_Base})(?:\p{Emoji_Modifier}))|(?:(?:\p{Emoji})(?:\u{FE0F}))|(?:\p{Emoji})))+)|(?:(?:(?:\p{Regional_Indicator})(?:\p{Regional_Indicator}))|(?:(?:\p{Emoji_Modifier_Base})(?:\p{Emoji_Modifier}))|(?:[0-9#*]\u{FE0F}\u{20E3})|(?:(?:\p{Emoji})(?:\u{FE0F})))/u;
+
 /** Checks if `largeSpan` can contain `smallSpan` */
 export function containsSpan(largeSpan: Span, smallSpan: Span): boolean {
   return largeSpan.start <= smallSpan.start && smallSpan.end <= largeSpan.end;
@@ -94,7 +98,11 @@ const TOKEN_PARTS = {
   codeblock: /```/,
   code: /``/,
   link: /https?:\/\/\S+\.[\p{Alphabetic}\\=+&%@;!._~-]+/,
-  emoji: /\p{Emoji_Presentation}/,
+  emoji: new RegExp(
+    String.raw
+      `${EMOJI_SEQUENCE.source}|\p{Emoji_Presentation}|\p{Extended_Pictographic}`,
+    "u",
+  ),
   custom_start: /\[(?:.|\w+):/,
   custom_end: /\]/,
   emoji_name: /:\w+:/,
