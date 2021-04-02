@@ -1,6 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.addTextSpans = exports.parseMarkup = exports.partition = exports.UnreachableCaseError = exports.containsSpan = void 0;
+// generated from: https://github.com/brecert/unicode-emoji-regex
+const EMOJI_SEQUENCE = /(?:(?:(?:(?:\p{Emoji})(?:\u{FE0F}))|(?:(?:\p{Emoji_Modifier_Base})(?:\p{Emoji_Modifier}))|(?:\p{Emoji}))(?:[\u{E0020}-\u{E007E}]+)(?:\u{E007F}))|(?:(?:(?:(?:\p{Emoji_Modifier_Base})(?:\p{Emoji_Modifier}))|(?:(?:\p{Emoji})(?:\u{FE0F}))|(?:\p{Emoji}))(?:(?:\u{200d})(?:(?:(?:\p{Emoji_Modifier_Base})(?:\p{Emoji_Modifier}))|(?:(?:\p{Emoji})(?:\u{FE0F}))|(?:\p{Emoji})))+)|(?:(?:(?:\p{Regional_Indicator})(?:\p{Regional_Indicator}))|(?:(?:\p{Emoji_Modifier_Base})(?:\p{Emoji_Modifier}))|(?:[0-9#*]\u{FE0F}\u{20E3})|(?:(?:\p{Emoji})(?:\u{FE0F})))/u;
 /** Checks if `largeSpan` can contain `smallSpan` */
 function containsSpan(largeSpan, smallSpan) {
     return largeSpan.start <= smallSpan.start && smallSpan.end <= largeSpan.end;
@@ -50,8 +52,8 @@ const TOKEN_PARTS = {
     strikethrough: /~~/,
     codeblock: /```/,
     code: /``/,
-    link: /https?:\/\/\S+\.\S+/,
-    emoji: /\p{Emoji_Presentation}/,
+    link: /https?:\/\/\S+\.[\p{Alphabetic}\\=+&%@;!._~-]+/,
+    emoji: new RegExp(String.raw `${EMOJI_SEQUENCE.source}|\p{Emoji_Presentation}|\p{Extended_Pictographic}`, "u"),
     custom_start: /\[(?:.|\w+):/,
     custom_end: /\]/,
     emoji_name: /:\w+:/,
