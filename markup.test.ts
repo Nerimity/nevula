@@ -508,3 +508,18 @@ Deno.test("links should parse a full url", () => {
     ]],
   );
 });
+
+Deno.test("links should parse a full url with a hash", () => {
+  let text = "hello https://example.com/example#123) world";
+  let textNodes = entitySlices(text, addTextSpans(parseMarkup(text)));
+  assertEquals(
+    textNodes,
+    ["text", {}, [
+      ["text", {}, "hello "],
+      ["link", {}, [
+        ["text", {}, "https://example.com/example#123"],
+      ]],
+      ["text", {}, ") world"],
+    ]],
+  );
+});

@@ -52,7 +52,7 @@ const TOKEN_PARTS = {
     strikethrough: /~~/,
     codeblock: /```/,
     code: /``/,
-    link: /https?:\/\/\S+\.[\p{Alphabetic}\d\/\\?=+&%@;!._~-]+/,
+    link: /https?:\/\/\S+\.[\p{Alphabetic}\d\/\\#?=+&%@;!._~-]+/,
     emoji: new RegExp(String.raw `${EMOJI_SEQUENCE.source}|\p{Emoji_Presentation}|\p{Extended_Pictographic}`, "u"),
     custom_start: /\[(?:.|\w+):/,
     custom_end: /\]/,
