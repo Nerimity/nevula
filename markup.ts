@@ -51,6 +51,7 @@ export type Entity =
   | EntityType<"link">
   | EntityType<"bold">
   | EntityType<"italic">
+  | EntityType<"spoiler">
   | EntityType<"underline">
   | EntityType<"strikethrough">
   | EntityType<"code">
@@ -97,6 +98,7 @@ const TOKEN_PARTS = {
   strikethrough: /~~/,
   codeblock: /```/,
   code: /``/,
+  spoiler: /\|\|/,
   link: /https?:\/\/\S+\.[\p{Alphabetic}\d\/\\#?=+&%@;!._~-]+/,
   emoji: new RegExp(
     String.raw
@@ -119,7 +121,7 @@ function tokenType(token: RegExpMatchArray) {
 
 /** A marker used for identifying and matching tokens  */
 export type Marker = {
-  type: "bold" | "italic" | "underline" | "strikethrough" | "blockquote";
+  type: "bold" | "italic" | "underline" | "spoiler" | "strikethrough" | "blockquote";
   span: Span;
 };
 
@@ -211,6 +213,7 @@ export function parseMarkup(text: string): Entity {
       }
       case "bold":
       case "italic":
+      case "spoiler":
       case "underline":
       case "strikethrough": {
         const markerIndex = markers.findIndex((m) => m.type === type);

@@ -25,7 +25,7 @@ export declare type EntityType<N, T = {}> = {
     params: T;
 };
 /** A text entity */
-export declare type Entity = EntityType<"text"> | EntityType<"link"> | EntityType<"bold"> | EntityType<"italic"> | EntityType<"underline"> | EntityType<"strikethrough"> | EntityType<"code"> | EntityType<"emoji"> | EntityType<"emoji_name"> | EntityType<"codeblock", {
+export declare type Entity = EntityType<"text"> | EntityType<"link"> | EntityType<"bold"> | EntityType<"italic"> | EntityType<"spoiler"> | EntityType<"underline"> | EntityType<"strikethrough"> | EntityType<"code"> | EntityType<"emoji"> | EntityType<"emoji_name"> | EntityType<"codeblock", {
     /** What language highlighting should be used to highlight the codeblock */
     lang?: string;
 }> | EntityType<"blockquote", {
@@ -37,7 +37,7 @@ export declare type Entity = EntityType<"text"> | EntityType<"link"> | EntityTyp
 }>;
 /** A marker used for identifying and matching tokens  */
 export declare type Marker = {
-    type: "bold" | "italic" | "underline" | "strikethrough" | "blockquote";
+    type: "bold" | "italic" | "underline" | "spoiler" | "strikethrough" | "blockquote";
     span: Span;
 };
 /**

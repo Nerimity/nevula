@@ -46,6 +46,7 @@ const TOKEN_PARTS = {
     strikethrough: /~~/,
     codeblock: /```/,
     code: /``/,
+    spoiler: /\|\|/,
     link: /https?:\/\/\S+\.[\p{Alphabetic}\d\/\\#?=+&%@;!._~-]+/,
     emoji: new RegExp(String.raw `${EMOJI_SEQUENCE.source}|\p{Emoji_Presentation}|\p{Extended_Pictographic}`, "u"),
     custom_start: /\[(?:.|\w+):/,
@@ -135,6 +136,7 @@ export function parseMarkup(text) {
             }
             case "bold":
             case "italic":
+            case "spoiler":
             case "underline":
             case "strikethrough": {
                 const markerIndex = markers.findIndex((m) => m.type === type);

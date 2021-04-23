@@ -2,12 +2,34 @@
 <html>
   <head>
     <title>nertivia markup cli example</title>
+    <meta charset="UTF-8">
+    <style>
+      .spoiler {
+        position: relative;
+        contain: content;
+      }
+      .spoiler::after {
+        content: "";
+        position: absolute;
+        border-radius: 4px;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #222;
+        z-index: 1;
+      }
+      .spoiler:hover:after {
+        opacity: 0;
+      }
+    </style>
   </head>
   <body style="white-space: pre-line">
     normal text
 <b>bold</b>
 <i>italic</i>
 <u>underline</u>
+<span class="spoiler">spoiler</span>
 <code>code</code>
 <pre><code>codeblock</code></pre>
 <span class="emoji-sparkles">✨</span> <span class="emoji-sparkles">✨</span>

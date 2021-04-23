@@ -53,6 +53,13 @@ function transformEntity(entity: Entity, ctx: Context): string {
         return sliceText(ctx, entity.outerSpan);
       }
     }
+    case "spoiler": {
+      return h(
+        "span",
+        { class: "spoiler" },
+        transformEntities(entity.entities, ctx),
+      );
+    }
     case "bold":
     case "italic":
     case "underline":
@@ -76,8 +83,8 @@ function transformEntity(entity: Entity, ctx: Context): string {
       return transformCustomEntity(entity, ctx);
     }
     case "link": {
-      const url = sliceText(ctx, entity.innerSpan)
-      return h("a", { href: url }, url)
+      const url = sliceText(ctx, entity.innerSpan);
+      return h("a", { href: url }, url);
     }
     default: {
       throw new UnreachableCaseError(entity);
@@ -135,6 +142,27 @@ const html = `
 <html>
   <head>
     <title>nertivia markup cli example</title>
+    <meta charset="UTF-8">
+    <style>
+      .spoiler {
+        position: relative;
+        contain: content;
+      }
+      .spoiler::after {
+        content: "";
+        position: absolute;
+        border-radius: 4px;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #222;
+        z-index: 1;
+      }
+      .spoiler:hover:after {
+        opacity: 0;
+      }
+    </style>
   </head>
   <body style="white-space: pre-line">
     ${transformEntity(entity, { text: file })}
