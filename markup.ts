@@ -1,6 +1,6 @@
 // generated from: https://github.com/brecert/unicode-emoji-regex
-const EMOJI_SEQUENCE =
-  /(?:(?:(?:(?:\p{Emoji})(?:\u{FE0F}))|(?:(?:\p{Emoji_Modifier_Base})(?:\p{Emoji_Modifier}))|(?:\p{Emoji}))(?:[\u{E0020}-\u{E007E}]+)(?:\u{E007F}))|(?:(?:(?:(?:\p{Emoji_Modifier_Base})(?:\p{Emoji_Modifier}))|(?:(?:\p{Emoji})(?:\u{FE0F}))|(?:\p{Emoji}))(?:(?:\u{200d})(?:(?:(?:\p{Emoji_Modifier_Base})(?:\p{Emoji_Modifier}))|(?:(?:\p{Emoji})(?:\u{FE0F}))|(?:\p{Emoji})))+)|(?:(?:(?:\p{Regional_Indicator})(?:\p{Regional_Indicator}))|(?:(?:\p{Emoji_Modifier_Base})(?:\p{Emoji_Modifier}))|(?:[0-9#*]\u{FE0F}\u{20E3})|(?:(?:\p{Emoji})(?:\u{FE0F})))/u;
+const EMOJI =
+  /(?:(?:(?:(?:(?:\p{Emoji})(?:\u{FE0F}))|(?:(?:\p{Emoji_Modifier_Base})(?:\p{Emoji_Modifier}))|(?:\p{Emoji}))(?:[\u{E0020}-\u{E007E}]+)(?:\u{E007F}))|(?:(?:(?:(?:\p{Emoji_Modifier_Base})(?:\p{Emoji_Modifier}))|(?:(?:\p{Emoji})(?:\u{FE0F}))|(?:\p{Emoji}))(?:(?:\u{200d})(?:(?:(?:\p{Emoji_Modifier_Base})(?:\p{Emoji_Modifier}))|(?:(?:\p{Emoji})(?:\u{FE0F}))|(?:\p{Emoji})))+)|(?:(?:(?:\p{Regional_Indicator})(?:\p{Regional_Indicator}))|(?:(?:\p{Emoji_Modifier_Base})(?:\p{Emoji_Modifier}))|(?:[0-9#*]\u{FE0F}\u{20E3})|(?:(?:\p{Emoji})(?:\u{FE0F}))))|\p{Emoji_Presentation}|\p{Extended_Pictographic}/u;
 
 /** Checks if `largeSpan` can contain `smallSpan` */
 export function containsSpan(largeSpan: Span, smallSpan: Span): boolean {
@@ -100,11 +100,7 @@ const TOKEN_PARTS = {
   code: /``/,
   spoiler: /\|\|/,
   link: /https?:\/\/\S+\.[\p{Alphabetic}\d\/\\#?=+&%@;!._~-]+/,
-  emoji: new RegExp(
-    String.raw
-      `${EMOJI_SEQUENCE.source}|\p{Emoji_Presentation}|\p{Extended_Pictographic}`,
-    "u",
-  ),
+  emoji: EMOJI,
   custom_start: /\[(?:.|\w+):/,
   custom_end: /\]/,
   emoji_name: /:\w+:/,
@@ -121,7 +117,13 @@ function tokenType(token: RegExpMatchArray) {
 
 /** A marker used for identifying and matching tokens  */
 export type Marker = {
-  type: "bold" | "italic" | "underline" | "spoiler" | "strikethrough" | "blockquote";
+  type:
+    | "bold"
+    | "italic"
+    | "underline"
+    | "spoiler"
+    | "strikethrough"
+    | "blockquote";
   span: Span;
 };
 
