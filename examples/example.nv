@@ -1,8 +1,11 @@
 normal text
 **bold**
+_italic_
+*italic*
 //italic//
 __underline__
 ||spoiler||
+`code`
 ``code``
 ```codeblock```
 :sparkles: ✨

@@ -233,12 +233,39 @@ Deno.test("bold should be parsed", () => {
   );
 });
 
-Deno.test("italic should be parsed", () => {
+Deno.test("italic forward slash should be parsed", () => {
   let text = `//hello world!//`.trim();
   let textNodes = entitySlices(text, addTextSpans(parseMarkup(text)));
   assertEquals(
     textNodes,
     ["text", {}, [["italic", {}, [["text", {}, "hello world!"]]]]],
+  );
+});
+
+Deno.test("italic asterisk should be parsed", () => {
+  let text = `*hello world!*`.trim();
+  let textNodes = entitySlices(text, addTextSpans(parseMarkup(text)));
+  assertEquals(
+    textNodes,
+    ["text", {}, [["italic", {}, [["text", {}, "hello world!"]]]]],
+  );
+});
+
+Deno.test("italic underline should be parsed", () => {
+  let text = `_hello world!_`.trim();
+  let textNodes = entitySlices(text, addTextSpans(parseMarkup(text)));
+  assertEquals(
+    textNodes,
+    ["text", {}, [["italic", {}, [["text", {}, "hello world!"]]]]],
+  );
+});
+
+Deno.test("italic mixed should not be parsed", () => {
+  let text = `_hello world!*`.trim();
+  let textNodes = entitySlices(text, addTextSpans(parseMarkup(text)));
+  assertEquals(
+    textNodes,
+    ["text", {}, "_hello world!*"],
   );
 });
 
@@ -268,6 +295,35 @@ Deno.test("code should be parsed", () => {
     ["text", {}, [["code", {}, [["text", {}, "hello world!"]]]]],
   );
 });
+
+Deno.test("code single marker should be parsed", () => {
+  let text = "`hello world!`".trim();
+  let textNodes = entitySlices(text, addTextSpans(parseMarkup(text)));
+  assertEquals(
+    textNodes,
+    ["text", {}, [["code", {}, [["text", {}, "hello world!"]]]]],
+  );
+});
+
+Deno.test("code mixed marker should not be parsed", () => {
+  let text = "``hello world!`".trim();
+  let textNodes = entitySlices(text, addTextSpans(parseMarkup(text)));
+  assertEquals(
+    textNodes,
+    ["text", {}, "``hello world!`"],
+  );
+});
+
+Deno.test("code mixed marker should not be parsed", () => {
+  let text = "`hello world!``".trim();
+  let textNodes = entitySlices(text, addTextSpans(parseMarkup(text)));
+  assertEquals(
+    textNodes,
+    ["text", {}, "`hello world!``"],
+  );
+});
+
+
 
 Deno.test("code should be parsed", () => {
   let text = `

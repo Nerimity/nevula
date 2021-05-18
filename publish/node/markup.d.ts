@@ -39,6 +39,7 @@ export declare type Entity = EntityType<"text"> | EntityType<"link"> | EntityTyp
 export declare type Marker = {
     type: "bold" | "italic" | "underline" | "spoiler" | "strikethrough" | "blockquote";
     span: Span;
+    data?: string;
 };
 /**
  * Parses a string into entities

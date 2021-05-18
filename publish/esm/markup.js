@@ -41,11 +41,11 @@ function generateMapping(parts) {
 const TOKEN_PARTS = {
     escape: /\\[\\*/_~`\[\]]/,
     bold: /\*\*/,
-    italic: /\/\//,
     underline: /__/,
+    italic: /(?:_|\*|\/\/)/,
     strikethrough: /~~/,
     codeblock: /```/,
-    code: /``/,
+    code: /`?`/,
     spoiler: /\|\|/,
     link: /https?:\/\/\S+\.[\p{Alphabetic}\d\/\\#?=+&%@;!._~-]+/,
     emoji: EMOJI,
@@ -139,7 +139,8 @@ export function parseMarkup(text) {
             case "spoiler":
             case "underline":
             case "strikethrough": {
-                const markerIndex = markers.findIndex((m) => m.type === type);
+                const data = token[0];
+                const markerIndex = markers.findIndex((m) => m.type === type && m.data == data);
                 if (markerIndex >= 0) {
                     const marker = markers[markerIndex];
                     const innerSpan = { start: marker.span.end, end: indice.start };
@@ -159,13 +160,14 @@ export function parseMarkup(text) {
                     markers.push({
                         type: type,
                         span: indice,
+                        data: data
                     });
                 }
                 break;
             }
             case "code": {
                 // because code doesn't have innerEntities, we can skip parsing those tokens
-                const markerIndex = tokens.findIndex((t, i) => i > pos && tokenType(t) === "code");
+                const markerIndex = tokens.findIndex((t, i) => i > pos && tokenType(t) === "code" && t[0] === token[0]);
                 if (markerIndex >= 0) {
                     const escapes = tokens.slice(pos, markerIndex).filter((e) => tokenType(e) === "escape");
                     const endToken = tokens[markerIndex];
