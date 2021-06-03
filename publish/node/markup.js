@@ -53,7 +53,7 @@ const TOKEN_PARTS = {
     codeblock: /```/,
     code: /`?`/,
     spoiler: /\|\|/,
-    link: /https?:\/\/\S+\.[\p{Alphabetic}\d\/\\#?=+&%@;!._~-]+/,
+    link: /https?:\/\/\S+\.[\p{Alphabetic}\d\/\\#?=+&%@!;:._~-]+/,
     emoji: EMOJI,
     custom_start: /\[(?:.|\w+):/,
     custom_end: /\]/,
