@@ -28,6 +28,18 @@ export function partition<T>(list: T[], filter: (item: T) => boolean) {
   return result;
 }
 
+/** Returns the index of the last element in the array where predicate is true, and -1 otherwise.  */
+export function findLastIndex<T>(list: T[], predicate: (item: T) => boolean) {
+  for (let i = list.length - 1; i >= 0; i--) {
+    const item = list[i];
+
+    if (predicate(item)) {
+      return i;
+    }
+  }
+  return -1;
+}
+
 /** A span, similar to ranges in other languages */
 export type Span = { start: number; end: number };
 
@@ -66,14 +78,17 @@ export type Entity =
     /** Not currently used, only typed for spec complience */
     borderColor?: string;
   }>
+  | EntityType<"color", {
+    color: "reset" | `#${string}`;
+  }>
   | EntityType<"custom", {
     /** The custom expression type */
     type: string;
   }>;
 
-/** 
+/**
  * Generate a global regex from a record
- * 
+ *
  * each name will become a named capture group
  * */
 const generateRegex = (parts: Record<string, RegExp>) => {
@@ -98,9 +113,10 @@ const TOKEN_PARTS = {
   strikethrough: /~~/,
   codeblock: /```/,
   code: /`?`/,
-  spoiler: /\|\|/,  
+  spoiler: /\|\|/,
   link: /https?:\/\/\S+\.[\p{Alphabetic}\d\/\\#?=+&%@!;:._~-]+/,
   emoji: EMOJI,
+  color: /\[#(?:\p{Hex_Digit}{3}|\p{Hex_Digit}{6}|reset)\]/,
   custom_start: /\[(?:.|\w+):/,
   custom_end: /\]/,
   emoji_name: /:\w+:/,
@@ -123,9 +139,10 @@ export type Marker = {
     | "underline"
     | "spoiler"
     | "strikethrough"
-    | "blockquote";
+    | "blockquote"
+    | "color";
   span: Span;
-  data?: string
+  data?: string;
 };
 
 /**
@@ -149,6 +166,8 @@ export function parseMarkup(text: string): Entity {
       const innerSpan = { start: marker.span.end, end: indice.start };
       const outerSpan = { start: marker.span.start, end: indice.end };
 
+      checkColor(innerSpan.end);
+
       const [innerEntities, remainingEntities] = partition(
         entities,
         (e) => containsSpan(outerSpan, e.outerSpan),
@@ -166,12 +185,48 @@ export function parseMarkup(text: string): Entity {
     }
 
     if (text.startsWith("> ", indice.end)) {
+      // Temporarily limit checkColor scope to single lines.
+      checkColor(indice.end - 1);
+
       markers.push({
         type: "blockquote",
         span: { start: indice.start, end: indice.end + 2 },
       });
     }
   }
+
+  const checkColor = (atPos: number) => {
+    const markerIndex = findLastIndex(markers, (m) => m.type === "color");
+
+    if (markerIndex >= 0) {
+      const marker = markers[markerIndex];
+
+      const innerSpan = { start: marker.span.end, end: atPos };
+      const outerSpan = { start: marker.span.start, end: atPos };
+
+      const [innerEntities, remainingEntities] = partition(
+        entities,
+        (e) => containsSpan(outerSpan, e.innerSpan),
+      );
+
+      markers.splice(markerIndex);
+      entities = remainingEntities;
+
+      entities.push({
+        type: "color",
+        innerSpan,
+        outerSpan,
+        entities: innerEntities,
+        params: {
+          color: marker.data! as `#${string}` | `reset`,
+        },
+      });
+
+      return true;
+    }
+
+    return false;
+  };
 
   if (!tokens) throw new Error("Did not parse...");
 
@@ -219,13 +274,17 @@ export function parseMarkup(text: string): Entity {
       case "spoiler":
       case "underline":
       case "strikethrough": {
-        const data = token[0]
-        const markerIndex = markers.findIndex((m) => m.type === type && m.data == data);
+        const data = token[0];
+        const markerIndex = markers.findIndex((m) =>
+          m.type === type && m.data == data
+        );
         if (markerIndex >= 0) {
           const marker = markers[markerIndex];
 
           const innerSpan = { start: marker.span.end, end: indice.start };
           const outerSpan = { start: marker.span.start, end: indice.end };
+
+          checkColor(innerSpan.end);
 
           const [innerEntities, remainingEntities] = partition(
             entities,
@@ -245,7 +304,7 @@ export function parseMarkup(text: string): Entity {
           markers.push({
             type: type,
             span: indice,
-            data: data
+            data: data,
           });
         }
 
@@ -330,6 +389,22 @@ export function parseMarkup(text: string): Entity {
         }
         break;
       }
+      case "color": {
+        let color = text.slice(indice.start + 1, indice.end - 1);
+
+        if (color === "#reset") {
+          checkColor(indice.start);
+          color = color.slice(1);
+        }
+
+        markers.push({
+          type: "color",
+          span: indice,
+          data: color,
+        });
+
+        break;
+      }
       case "custom_start": {
         const markerIndex = tokens.findIndex((t, i) =>
           i > pos && tokenType(t) === "custom_end"
@@ -391,6 +466,7 @@ export function parseMarkup(text: string): Entity {
     }
   }
   parseLine({ start: text.length, end: text.length });
+  checkColor(text.length);
 
   return ({
     type: "text",

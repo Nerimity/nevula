@@ -1,12 +1,12 @@
 {
   "name": "nertivia-markup",
-  "version": "0.9.1",
+  "version": "0.10.0",
   "description": "A (relatively) simple and (hopefully) performant markup parser made for nertivia",
   "main": "publish/node/markup.js",
   "types": "publish/esm/markup.d.ts",
   "module": "publish/esm/markup.js",
   "repository": "https://github.com/Nertivia/markup.git",
-  "author": "brecert <11599528+Brecert@users.noreply.github.com>",
+  "author": "bree <me@bree.dev>",
   "license": "MIT",
   "files": [
     "markup.ts",

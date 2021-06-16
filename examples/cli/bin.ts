@@ -86,6 +86,18 @@ function transformEntity(entity: Entity, ctx: Context): string {
       const url = sliceText(ctx, entity.innerSpan);
       return h("a", { href: url }, url);
     }
+    case "color": {
+      const { color } = entity.params;
+      if (color.startsWith("#")) {
+        return h(
+          "span",
+          { style: `color: ${entity.params.color}` },
+          transformEntities(entity.entities, ctx),
+        );
+      } else {
+        return transformEntities(entity.entities, ctx).join("");
+      }
+    }
     default: {
       throw new UnreachableCaseError(entity);
     }

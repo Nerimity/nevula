@@ -6,6 +6,7 @@ export declare class UnreachableCaseError extends Error {
 }
 /** Partition a list into two parts based on a boolean: `[true, false]` */
 export declare function partition<T>(list: T[], filter: (item: T) => boolean): [T[], T[]];
+export declare function findIndexRight<T>(list: T[], predicate: (item: T) => boolean): number;
 /** A span, similar to ranges in other languages */
 export declare type Span = {
     start: number;
@@ -31,13 +32,15 @@ export declare type Entity = EntityType<"text"> | EntityType<"link"> | EntityTyp
 }> | EntityType<"blockquote", {
     /** Not currently used, only typed for spec complience */
     borderColor?: string;
+}> | EntityType<"color", {
+    color: "reset" | `#${string}`;
 }> | EntityType<"custom", {
     /** The custom expression type */
     type: string;
 }>;
 /** A marker used for identifying and matching tokens  */
 export declare type Marker = {
-    type: "bold" | "italic" | "underline" | "spoiler" | "strikethrough" | "blockquote";
+    type: "bold" | "italic" | "underline" | "spoiler" | "strikethrough" | "blockquote" | "color";
     span: Span;
     data?: string;
 };

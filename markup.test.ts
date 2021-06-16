@@ -323,8 +323,6 @@ Deno.test("code mixed marker should not be parsed", () => {
   );
 });
 
-
-
 Deno.test("code should be parsed", () => {
   let text = `
 \`\`\`
@@ -580,7 +578,6 @@ Deno.test("links should parse a full url with a hash", () => {
   );
 });
 
-
 Deno.test("spoilers should be parsed", () => {
   let text = "hello ||secret|| world";
   let textNodes = entitySlices(text, addTextSpans(parseMarkup(text)));
@@ -592,6 +589,99 @@ Deno.test("spoilers should be parsed", () => {
         ["text", {}, "secret"],
       ]],
       ["text", {}, " world"],
+    ]],
+  );
+});
+
+Deno.test("color should be parsed", () => {
+  let text = "hello [#f00] red world";
+  let textNodes = entitySlices(text, addTextSpans(parseMarkup(text)));
+  assertEquals(
+    textNodes,
+    ["text", {}, [
+      ["text", {}, "hello "],
+      ["color", { color: "#f00" }, [
+        ["text", {}, " red world"],
+      ]],
+    ]],
+  );
+});
+
+Deno.test("color should be parsed in scope", () => {
+  let text = "hello **[#f00] red** world";
+  let textNodes = entitySlices(text, addTextSpans(parseMarkup(text)));
+  assertEquals(
+    textNodes,
+    ["text", {}, [
+      ["text", {}, "hello "],
+      ["bold", {}, [
+        ["color", { color: "#f00" }, [
+          ["text", {}, " red"],
+        ]],
+      ]],
+      ["text", {}, " world"],
+    ]],
+  );
+});
+
+Deno.test("color should be able to be reset", () => {
+  let text = "hello **[#f00] red [#reset] not red** world";
+  let textNodes = entitySlices(text, addTextSpans(parseMarkup(text)));
+  assertEquals(
+    textNodes,
+    ["text", {}, [
+      ["text", {}, "hello "],
+      ["bold", {}, [
+        ["color", { color: "#f00" }, [
+          ["text", {}, " red "],
+        ]],
+        ["color", { color: "reset" }, [
+          ["text", {}, " not red"],
+        ]],
+      ]],
+      ["text", {}, " world"],
+    ]],
+  );
+});
+
+Deno.test("color should continue after a blockquote", () => {
+  let text = "> [#f00] hello red world\nnot red";
+  let textNodes = entitySlices(text, addTextSpans(parseMarkup(text)));
+  assertEquals(
+    textNodes,
+    ["text", {}, [
+      ["blockquote", {}, [
+        ["color", { color: "#f00" }, [
+          ["text", {}, " hello red world"],
+        ]],
+      ]],
+      ["text", {}, "not red"],
+    ]],
+  );
+});
+
+Deno.test("color be contained with newlines nad blockquotes", () => {
+  let text =
+    "[#f01] hello red [#reset] not red\n> [#f02] hello red [#reset] not red world\nno style";
+  let textNodes = entitySlices(text, addTextSpans(parseMarkup(text)));
+  assertEquals(
+    textNodes,
+    ["text", {}, [
+      ["color", { color: "#f01" }, [
+        ["text", {}, " hello red "],
+      ]],
+      ["color", { color: "reset" }, [
+        ["text", {}, " not red"],
+      ]],
+      ["blockquote", {}, [
+        ["color", { color: "#f02" }, [
+          ["text", {}, " hello red "],
+        ]],
+        ["color", { color: "reset" }, [
+          ["text", {}, " not red world"],
+        ]],
+      ]],
+      ["text", {}, "no style"],
     ]],
   );
 });

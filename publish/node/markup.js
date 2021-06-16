@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.addTextSpans = exports.parseMarkup = exports.partition = exports.UnreachableCaseError = exports.containsSpan = void 0;
+exports.addTextSpans = exports.parseMarkup = exports.findIndexRight = exports.partition = exports.UnreachableCaseError = exports.containsSpan = void 0;
 // generated from: https://github.com/brecert/unicode-emoji-regex
 const EMOJI = /(?:(?:(?:(?:(?:\p{Emoji})(?:\u{FE0F}))|(?:(?:\p{Emoji_Modifier_Base})(?:\p{Emoji_Modifier}))|(?:\p{Emoji}))(?:[\u{E0020}-\u{E007E}]+)(?:\u{E007F}))|(?:(?:(?:(?:\p{Emoji_Modifier_Base})(?:\p{Emoji_Modifier}))|(?:(?:\p{Emoji})(?:\u{FE0F}))|(?:\p{Emoji}))(?:(?:\u{200d})(?:(?:(?:\p{Emoji_Modifier_Base})(?:\p{Emoji_Modifier}))|(?:(?:\p{Emoji})(?:\u{FE0F}))|(?:\p{Emoji})))+)|(?:(?:(?:\p{Regional_Indicator})(?:\p{Regional_Indicator}))|(?:(?:\p{Emoji_Modifier_Base})(?:\p{Emoji_Modifier}))|(?:[0-9#*]\u{FE0F}\u{20E3})|(?:(?:\p{Emoji})(?:\u{FE0F}))))|\p{Emoji_Presentation}|\p{Extended_Pictographic}/u;
 /** Checks if `largeSpan` can contain `smallSpan` */
@@ -30,6 +30,16 @@ function partition(list, filter) {
     return result;
 }
 exports.partition = partition;
+function findIndexRight(list, predicate) {
+    for (let i = list.length - 1; i >= 0; i--) {
+        const item = list[i];
+        if (predicate(item)) {
+            return i;
+        }
+    }
+    return -1;
+}
+exports.findIndexRight = findIndexRight;
 /**
  * Generate a global regex from a record
  *
@@ -55,6 +65,7 @@ const TOKEN_PARTS = {
     spoiler: /\|\|/,
     link: /https?:\/\/\S+\.[\p{Alphabetic}\d\/\\#?=+&%@!;:._~-]+/,
     emoji: EMOJI,
+    color: /\[#(?:\p{Hex_Digit}{3}|\p{Hex_Digit}{6}|reset)\]/,
     custom_start: /\[(?:.|\w+):/,
     custom_end: /\]/,
     emoji_name: /:\w+:/,
@@ -84,6 +95,7 @@ function parseMarkup(text) {
             const marker = markers[markerIndex];
             const innerSpan = { start: marker.span.end, end: indice.start };
             const outerSpan = { start: marker.span.start, end: indice.end };
+            checkColor(innerSpan.end);
             const [innerEntities, remainingEntities] = partition(entities, (e) => containsSpan(outerSpan, e.outerSpan));
             markers.splice(markerIndex);
             entities = remainingEntities;
@@ -96,12 +108,36 @@ function parseMarkup(text) {
             });
         }
         if (text.startsWith("> ", indice.end)) {
+            // Temporarily limit checkColor scope to single lines.
+            checkColor(indice.end - 1);
             markers.push({
                 type: "blockquote",
                 span: { start: indice.start, end: indice.end + 2 },
             });
         }
     }
+    const checkColor = (atPos) => {
+        const markerIndex = findIndexRight(markers, (m) => m.type === "color");
+        if (markerIndex >= 0) {
+            const marker = markers[markerIndex];
+            const innerSpan = { start: marker.span.end, end: atPos };
+            const outerSpan = { start: marker.span.start, end: atPos };
+            const [innerEntities, remainingEntities] = partition(entities, (e) => containsSpan(outerSpan, e.innerSpan));
+            markers.splice(markerIndex);
+            entities = remainingEntities;
+            entities.push({
+                type: "color",
+                innerSpan,
+                outerSpan,
+                entities: innerEntities,
+                params: {
+                    color: marker.data,
+                },
+            });
+            return true;
+        }
+        return false;
+    };
     if (!tokens)
         throw new Error("Did not parse...");
     parseLine({ start: 0, end: 0 });
@@ -151,6 +187,7 @@ function parseMarkup(text) {
                     const marker = markers[markerIndex];
                     const innerSpan = { start: marker.span.end, end: indice.start };
                     const outerSpan = { start: marker.span.start, end: indice.end };
+                    checkColor(innerSpan.end);
                     const [innerEntities, remainingEntities] = partition(entities, (e) => containsSpan(outerSpan, e.innerSpan));
                     markers.splice(markerIndex);
                     entities = remainingEntities;
@@ -166,7 +203,7 @@ function parseMarkup(text) {
                     markers.push({
                         type: type,
                         span: indice,
-                        data: data
+                        data: data,
                     });
                 }
                 break;
@@ -238,6 +275,19 @@ function parseMarkup(text) {
                 }
                 break;
             }
+            case "color": {
+                let color = text.slice(indice.start + 1, indice.end - 1);
+                if (color === "#reset") {
+                    checkColor(indice.start);
+                    color = color.slice(1);
+                }
+                markers.push({
+                    type: "color",
+                    span: indice,
+                    data: color,
+                });
+                break;
+            }
             case "custom_start": {
                 const markerIndex = tokens.findIndex((t, i) => i > pos && tokenType(t) === "custom_end");
                 if (markerIndex >= 0) {
@@ -293,6 +343,7 @@ function parseMarkup(text) {
         }
     }
     parseLine({ start: text.length, end: text.length });
+    checkColor(text.length);
     return ({
         type: "text",
         innerSpan: { start: 0, end: text.length },
