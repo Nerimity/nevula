@@ -6,7 +6,8 @@ export declare class UnreachableCaseError extends Error {
 }
 /** Partition a list into two parts based on a boolean: `[true, false]` */
 export declare function partition<T>(list: T[], filter: (item: T) => boolean): [T[], T[]];
-export declare function findIndexRight<T>(list: T[], predicate: (item: T) => boolean): number;
+/** Returns the index of the last element in the array where predicate is true, and -1 otherwise.  */
+export declare function findLastIndex<T>(list: T[], predicate: (item: T) => boolean): number;
 /** A span, similar to ranges in other languages */
 export declare type Span = {
     start: number;

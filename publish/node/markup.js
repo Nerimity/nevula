@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.addTextSpans = exports.parseMarkup = exports.findIndexRight = exports.partition = exports.UnreachableCaseError = exports.containsSpan = void 0;
+exports.addTextSpans = exports.parseMarkup = exports.findLastIndex = exports.partition = exports.UnreachableCaseError = exports.containsSpan = void 0;
 // generated from: https://github.com/brecert/unicode-emoji-regex
 const EMOJI = /(?:(?:(?:(?:(?:\p{Emoji})(?:\u{FE0F}))|(?:(?:\p{Emoji_Modifier_Base})(?:\p{Emoji_Modifier}))|(?:\p{Emoji}))(?:[\u{E0020}-\u{E007E}]+)(?:\u{E007F}))|(?:(?:(?:(?:\p{Emoji_Modifier_Base})(?:\p{Emoji_Modifier}))|(?:(?:\p{Emoji})(?:\u{FE0F}))|(?:\p{Emoji}))(?:(?:\u{200d})(?:(?:(?:\p{Emoji_Modifier_Base})(?:\p{Emoji_Modifier}))|(?:(?:\p{Emoji})(?:\u{FE0F}))|(?:\p{Emoji})))+)|(?:(?:(?:\p{Regional_Indicator})(?:\p{Regional_Indicator}))|(?:(?:\p{Emoji_Modifier_Base})(?:\p{Emoji_Modifier}))|(?:[0-9#*]\u{FE0F}\u{20E3})|(?:(?:\p{Emoji})(?:\u{FE0F}))))|\p{Emoji_Presentation}|\p{Extended_Pictographic}/u;
 /** Checks if `largeSpan` can contain `smallSpan` */
@@ -30,7 +30,8 @@ function partition(list, filter) {
     return result;
 }
 exports.partition = partition;
-function findIndexRight(list, predicate) {
+/** Returns the index of the last element in the array where predicate is true, and -1 otherwise.  */
+function findLastIndex(list, predicate) {
     for (let i = list.length - 1; i >= 0; i--) {
         const item = list[i];
         if (predicate(item)) {
@@ -39,7 +40,7 @@ function findIndexRight(list, predicate) {
     }
     return -1;
 }
-exports.findIndexRight = findIndexRight;
+exports.findLastIndex = findLastIndex;
 /**
  * Generate a global regex from a record
  *
@@ -117,7 +118,7 @@ function parseMarkup(text) {
         }
     }
     const checkColor = (atPos) => {
-        const markerIndex = findIndexRight(markers, (m) => m.type === "color");
+        const markerIndex = findLastIndex(markers, (m) => m.type === "color");
         if (markerIndex >= 0) {
             const marker = markers[markerIndex];
             const innerSpan = { start: marker.span.end, end: atPos };

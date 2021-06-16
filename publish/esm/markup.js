@@ -24,7 +24,8 @@ export function partition(list, filter) {
     }
     return result;
 }
-export function findIndexRight(list, predicate) {
+/** Returns the index of the last element in the array where predicate is true, and -1 otherwise.  */
+export function findLastIndex(list, predicate) {
     for (let i = list.length - 1; i >= 0; i--) {
         const item = list[i];
         if (predicate(item)) {
@@ -110,7 +111,7 @@ export function parseMarkup(text) {
         }
     }
     const checkColor = (atPos) => {
-        const markerIndex = findIndexRight(markers, (m) => m.type === "color");
+        const markerIndex = findLastIndex(markers, (m) => m.type === "color");
         if (markerIndex >= 0) {
             const marker = markers[markerIndex];
             const innerSpan = { start: marker.span.end, end: atPos };
