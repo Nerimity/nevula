@@ -660,7 +660,7 @@ Deno.test("color should continue after a blockquote", () => {
   );
 });
 
-Deno.test("color be contained with newlines nad blockquotes", () => {
+Deno.test("color be contained with newlines and blockquotes", () => {
   let text =
     "[#f01] hello red [#reset] not red\n> [#f02] hello red [#reset] not red world\nno style";
   let textNodes = entitySlices(text, addTextSpans(parseMarkup(text)));
@@ -682,6 +682,19 @@ Deno.test("color be contained with newlines nad blockquotes", () => {
         ]],
       ]],
       ["text", {}, "no style"],
+    ]],
+  );
+});
+
+Deno.test("color should support multiple layers of colors", () => {
+  let text = "[#f01] 1 [#f02] 2 [#f03] 3 ";
+  let textNodes = entitySlices(text, addTextSpans(parseMarkup(text)));
+  assertEquals(
+    textNodes,
+    ["text", {}, [
+      ["color", { color: "#f01" }, [["text", {}, " 1 "]]],
+      ["color", { color: "#f02" }, [["text", {}, " 2 "]]],
+      ["color", { color: "#f03" }, [["text", {}, " 3 "]]],
     ]],
   );
 });

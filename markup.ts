@@ -166,7 +166,7 @@ export function parseMarkup(text: string): Entity {
       const innerSpan = { start: marker.span.end, end: indice.start };
       const outerSpan = { start: marker.span.start, end: indice.end };
 
-      checkColor(innerSpan.end);
+      checkColor(innerSpan);
 
       const [innerEntities, remainingEntities] = partition(
         entities,
@@ -186,7 +186,11 @@ export function parseMarkup(text: string): Entity {
 
     if (text.startsWith("> ", indice.end)) {
       // Temporarily limit checkColor scope to single lines.
-      checkColor(indice.end - 1);
+      checkColor({
+        start: entities[entities.length - 1]?.outerSpan.end ?? 0,
+        // Remove newline
+        end: indice.end - 1,
+      });
 
       markers.push({
         type: "blockquote",
@@ -195,14 +199,20 @@ export function parseMarkup(text: string): Entity {
     }
   }
 
-  const checkColor = (atPos: number) => {
-    const markerIndex = findLastIndex(markers, (m) => m.type === "color");
+  const checkColor = (span: Span) => {
+    const markerIndex = findLastIndex(
+      markers,
+      (m) =>
+        m.type === "color" &&
+        m.span.start >= span.start &&
+        span.end >= m.span.end,
+    );
 
     if (markerIndex >= 0) {
       const marker = markers[markerIndex];
 
-      const innerSpan = { start: marker.span.end, end: atPos };
-      const outerSpan = { start: marker.span.start, end: atPos };
+      const innerSpan = { start: marker.span.end, end: span.end };
+      const outerSpan = { start: marker.span.start, end: span.end };
 
       const [innerEntities, remainingEntities] = partition(
         entities,
@@ -211,6 +221,11 @@ export function parseMarkup(text: string): Entity {
 
       markers.splice(markerIndex);
       entities = remainingEntities;
+
+      checkColor({
+        start: span.start,
+        end: outerSpan.start,
+      });
 
       entities.push({
         type: "color",
@@ -284,7 +299,7 @@ export function parseMarkup(text: string): Entity {
           const innerSpan = { start: marker.span.end, end: indice.start };
           const outerSpan = { start: marker.span.start, end: indice.end };
 
-          checkColor(innerSpan.end);
+          checkColor(innerSpan);
 
           const [innerEntities, remainingEntities] = partition(
             entities,
@@ -393,8 +408,8 @@ export function parseMarkup(text: string): Entity {
         let color = text.slice(indice.start + 1, indice.end - 1);
 
         if (color === "#reset") {
-          checkColor(indice.start);
           color = color.slice(1);
+          checkColor(indice);
         }
 
         markers.push({
@@ -466,7 +481,10 @@ export function parseMarkup(text: string): Entity {
     }
   }
   parseLine({ start: text.length, end: text.length });
-  checkColor(text.length);
+  checkColor({
+    start: entities[entities.length - 1]?.outerSpan.end ?? 0,
+    end: text.length,
+  });
 
   return ({
     type: "text",

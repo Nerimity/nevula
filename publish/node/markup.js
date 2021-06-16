@@ -83,12 +83,13 @@ function tokenType(token) {
  * @returns A root text entitiy, meant to make entity rendering easier
  */
 function parseMarkup(text) {
-    var _a, _b, _c;
+    var _a, _b, _c, _d, _e;
     let markers = [];
     let entities = [];
     let tokens = [...text.matchAll(TOKENS)];
     /** checks if a line is the beginning to or the end of a blockquote */
     function parseLine(indice) {
+        var _a, _b;
         const markerIndex = markers.findIndex((m) => m.type === "blockquote");
         // todo: this is nearly the same as the bold, italic, etc... family of parsing rules and can likely be simplified into a function
         //       for now though I'm keeping it like this for performance and the fear of micro-drying
@@ -96,7 +97,7 @@ function parseMarkup(text) {
             const marker = markers[markerIndex];
             const innerSpan = { start: marker.span.end, end: indice.start };
             const outerSpan = { start: marker.span.start, end: indice.end };
-            checkColor(innerSpan.end);
+            checkColor(innerSpan);
             const [innerEntities, remainingEntities] = partition(entities, (e) => containsSpan(outerSpan, e.outerSpan));
             markers.splice(markerIndex);
             entities = remainingEntities;
@@ -110,22 +111,32 @@ function parseMarkup(text) {
         }
         if (text.startsWith("> ", indice.end)) {
             // Temporarily limit checkColor scope to single lines.
-            checkColor(indice.end - 1);
+            checkColor({
+                start: (_b = (_a = entities[entities.length - 1]) === null || _a === void 0 ? void 0 : _a.outerSpan.end) !== null && _b !== void 0 ? _b : 0,
+                // Remove newline
+                end: indice.end - 1,
+            });
             markers.push({
                 type: "blockquote",
                 span: { start: indice.start, end: indice.end + 2 },
             });
         }
     }
-    const checkColor = (atPos) => {
-        const markerIndex = findLastIndex(markers, (m) => m.type === "color");
+    const checkColor = (span) => {
+        const markerIndex = findLastIndex(markers, (m) => m.type === "color" &&
+            m.span.start >= span.start &&
+            span.end >= m.span.end);
         if (markerIndex >= 0) {
             const marker = markers[markerIndex];
-            const innerSpan = { start: marker.span.end, end: atPos };
-            const outerSpan = { start: marker.span.start, end: atPos };
+            const innerSpan = { start: marker.span.end, end: span.end };
+            const outerSpan = { start: marker.span.start, end: span.end };
             const [innerEntities, remainingEntities] = partition(entities, (e) => containsSpan(outerSpan, e.innerSpan));
             markers.splice(markerIndex);
             entities = remainingEntities;
+            checkColor({
+                start: span.start,
+                end: outerSpan.start,
+            });
             entities.push({
                 type: "color",
                 innerSpan,
@@ -188,7 +199,7 @@ function parseMarkup(text) {
                     const marker = markers[markerIndex];
                     const innerSpan = { start: marker.span.end, end: indice.start };
                     const outerSpan = { start: marker.span.start, end: indice.end };
-                    checkColor(innerSpan.end);
+                    checkColor(innerSpan);
                     const [innerEntities, remainingEntities] = partition(entities, (e) => containsSpan(outerSpan, e.innerSpan));
                     markers.splice(markerIndex);
                     entities = remainingEntities;
@@ -279,8 +290,8 @@ function parseMarkup(text) {
             case "color": {
                 let color = text.slice(indice.start + 1, indice.end - 1);
                 if (color === "#reset") {
-                    checkColor(indice.start);
                     color = color.slice(1);
+                    checkColor(indice);
                 }
                 markers.push({
                     type: "color",
@@ -344,7 +355,10 @@ function parseMarkup(text) {
         }
     }
     parseLine({ start: text.length, end: text.length });
-    checkColor(text.length);
+    checkColor({
+        start: (_e = (_d = entities[entities.length - 1]) === null || _d === void 0 ? void 0 : _d.outerSpan.end) !== null && _e !== void 0 ? _e : 0,
+        end: text.length,
+    });
     return ({
         type: "text",
         innerSpan: { start: 0, end: text.length },

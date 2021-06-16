@@ -41,21 +41,21 @@ bench({
 });
 
 bench({
-  name: "nertivia markup with inserted text spans",
-  runs: RUNS,
-  func(b): void {
-    b.start();
-    addTextSpans(parseMarkup(SAMPLE));
-    b.stop();
-  },
-});
-
-bench({
   name: "/x/markdown@v2.0.0 (based on an older version of Marked)",
   runs: RUNS,
   func(b): void {
     b.start();
     Marked.parse(SAMPLE);
+    b.stop();
+  },
+});
+
+bench({
+  name: "nertivia markup with inserted text spans",
+  runs: RUNS,
+  func(b): void {
+    b.start();
+    addTextSpans(parseMarkup(SAMPLE));
     b.stop();
   },
 });
