@@ -726,3 +726,15 @@ Deno.test("color should work with code and codeblocks", () => {
     ]],
   );
 });
+
+Deno.test("color should work with custom entities", () => {
+  let text = "[#f01] 1 [test: hello world!]";
+  let textNodes = entitySlices(text, addTextSpans(parseMarkup(text)));
+  assertEquals(
+    textNodes,
+    ["text", {}, [
+      ["color", { color: "#f01" }, [["text", {}, " 1 "]]],
+      ["custom", { type: "test" }, [["text", {}, " hello world!"]]],
+    ]],
+  );
+});

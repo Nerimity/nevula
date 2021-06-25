@@ -76,7 +76,7 @@ function tokenType(token) {
  * @returns A root text entitiy, meant to make entity rendering easier
  */
 export function parseMarkup(text) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _j;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l;
     let markers = [];
     let entities = [];
     let tokens = [...text.matchAll(TOKENS)];
@@ -310,6 +310,10 @@ export function parseMarkup(text) {
                         start: endToken.index,
                         end: endToken.index + endToken[0].length,
                     };
+                    checkColor({
+                        start: (_j = (_h = entities[entities.length - 1]) === null || _h === void 0 ? void 0 : _h.outerSpan.end) !== null && _j !== void 0 ? _j : 0,
+                        end: indice.start,
+                    });
                     entities.push({
                         type: "custom",
                         innerSpan: { start: indice.end, end: endIndice.start },
@@ -357,7 +361,7 @@ export function parseMarkup(text) {
     }
     parseLine({ start: text.length, end: text.length });
     checkColor({
-        start: (_j = (_h = entities[entities.length - 1]) === null || _h === void 0 ? void 0 : _h.outerSpan.end) !== null && _j !== void 0 ? _j : 0,
+        start: (_l = (_k = entities[entities.length - 1]) === null || _k === void 0 ? void 0 : _k.outerSpan.end) !== null && _l !== void 0 ? _l : 0,
         end: text.length,
     });
     return ({

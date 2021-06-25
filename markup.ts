@@ -444,6 +444,11 @@ export function parseMarkup(text: string): Entity {
             end: endToken.index! + endToken[0].length,
           };
 
+          checkColor({
+            start: entities[entities.length - 1]?.outerSpan.end ?? 0,
+            end: indice.start,
+          });
+
           entities.push({
             type: "custom",
             innerSpan: { start: indice.end, end: endIndice.start },
