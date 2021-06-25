@@ -1,6 +1,6 @@
 {
   "name": "nertivia-markup",
-  "version": "0.10.1",
+  "version": "0.10.2",
   "description": "A (relatively) simple and (hopefully) performant markup parser made for nertivia",
   "main": "publish/node/markup.js",
   "types": "publish/esm/markup.d.ts",

@@ -340,6 +340,11 @@ export function parseMarkup(text: string): Entity {
             end: endToken.index! + endToken[0].length,
           };
 
+          checkColor({
+            start: entities[entities.length - 1]?.outerSpan.end ?? 0,
+            end: indice.start,
+          });
+
           // todo: write a better system that's more generalized for escaping
           entities.push({
             type: "code",
@@ -379,6 +384,11 @@ export function parseMarkup(text: string): Entity {
           const args = langRegex.exec(text);
           // remove the \n
           const lang = args?.[0]?.trim();
+
+          checkColor({
+            start: entities[entities.length - 1]?.outerSpan.end ?? 0,
+            end: indice.start,
+          });
 
           entities.push({
             type: "codeblock",

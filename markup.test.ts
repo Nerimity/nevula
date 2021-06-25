@@ -698,3 +698,31 @@ Deno.test("color should support multiple layers of colors", () => {
     ]],
   );
 });
+
+Deno.test("color should work with codeblocks", () => {
+  let text = "[#f01] 1 ```2```[#f03] 3";
+  let textNodes = entitySlices(text, addTextSpans(parseMarkup(text)));
+  assertEquals(
+    textNodes,
+    ["text", {}, [
+      ["color", { color: "#f01" }, [["text", {}, " 1 "]]],
+      ["codeblock", { lang: undefined }, [["text", {}, "2"]]],
+      ["color", { color: "#f03" }, [["text", {}, " 3"]]],
+    ]],
+  );
+});
+
+Deno.test("color should work with code and codeblocks", () => {
+  let text = "[#f01] 1 `2` 3 [#f04] 4 [#f05] 5";
+  let textNodes = entitySlices(text, addTextSpans(parseMarkup(text)));
+  assertEquals(
+    textNodes,
+    ["text", {}, [
+      ["color", { color: "#f01" }, [["text", {}, " 1 "]]],
+      ["code", {}, [["text", {}, "2"]]],
+      ["text", {}, " 3 "],
+      ["color", { color: "#f04" }, [["text", {}, " 4 "]]],
+      ["color", { color: "#f05" }, [["text", {}, " 5"]]],
+    ]],
+  );
+});
