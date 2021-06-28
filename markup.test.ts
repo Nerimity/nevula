@@ -738,3 +738,15 @@ Deno.test("color should work with custom entities", () => {
     ]],
   );
 });
+
+Deno.test("eggs should be transformed into color entities", () => {
+  let text = "§0 1 §r 2 §k 3";
+  let textNodes = entitySlices(text, addTextSpans(parseMarkup(text)));
+  assertEquals(
+    textNodes,
+    ["text", {}, [
+      ["color", { color: "#000" }, [["text", {}, " 1 "]]],
+      ["color", { color: "reset" }, [["text", {}, " 2 §k 3"]]],
+    ]],
+  );
+});
