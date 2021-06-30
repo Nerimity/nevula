@@ -58,6 +58,7 @@ const TOKEN_PARTS = {
     code: /`?`/,
     spoiler: /\|\|/,
     link: /https?:\/\/\S+\.[\p{Alphabetic}\d\/\\#?=+&%@!;:._~-]+/u,
+    link_contained: /<https?:\/\/\S+\.[\p{Alphabetic}\d\/\\#?=+&%@!;:._~-]+>/u,
     emoji: EMOJI,
     color: /\[#(?:\p{Hex_Digit}{3}|\p{Hex_Digit}{6}|reset)\]/,
     custom_start: /\[(?:.|[\p{L}\p{N}\u{21}-\u{2F}_]+):/u,
@@ -352,6 +353,16 @@ export function parseMarkup(text) {
                     });
                     pos = markerIndex;
                 }
+                break;
+            }
+            case "link_contained": {
+                entities.push({
+                    type: "link",
+                    innerSpan: { start: indice.start + 1, end: indice.end - 1 },
+                    outerSpan: indice,
+                    entities: [],
+                    params: {},
+                });
                 break;
             }
             case "link": {
