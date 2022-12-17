@@ -1,3 +1,5 @@
+// generated from: https://github.com/brecert/unicode-emoji-regex
+const EMOJI = /(?:(?:(?:(?:(?:\p{Emoji})(?:\u{FE0F}))|(?:(?:\p{Emoji_Modifier_Base})(?:\p{Emoji_Modifier}))|(?:\p{Emoji}))(?:[\u{E0020}-\u{E007E}]+)(?:\u{E007F}))|(?:(?:(?:(?:\p{Emoji_Modifier_Base})(?:\p{Emoji_Modifier}))|(?:(?:\p{Emoji})(?:\u{FE0F}))|(?:\p{Emoji}))(?:(?:\u{200d})(?:(?:(?:\p{Emoji_Modifier_Base})(?:\p{Emoji_Modifier}))|(?:(?:\p{Emoji})(?:\u{FE0F}))|(?:\p{Emoji})))+)|(?:(?:(?:\p{Regional_Indicator})(?:\p{Regional_Indicator}))|(?:(?:\p{Emoji_Modifier_Base})(?:\p{Emoji_Modifier}))|(?:[0-9#*]\u{FE0F}\u{20E3})|(?:(?:\p{Emoji})(?:\u{FE0F}))))|\p{Emoji_Presentation}|\p{Extended_Pictographic}/u;
 /** Checks if `largeSpan` can contain `smallSpan` */
 export function containsSpan(largeSpan, smallSpan) {
     return largeSpan.start <= smallSpan.start && smallSpan.end <= largeSpan.end;
@@ -22,6 +24,16 @@ export function partition(list, filter) {
     }
     return result;
 }
+/** Returns the index of the last element in the array where predicate is true, and -1 otherwise.  */
+export function findLastIndex(list, predicate) {
+    for (let i = list.length - 1; i >= 0; i--) {
+        const item = list[i];
+        if (predicate(item)) {
+            return i;
+        }
+    }
+    return -1;
+}
 /**
  * Generate a global regex from a record
  *
@@ -31,7 +43,7 @@ const generateRegex = (parts) => {
     // todo: named grouped regexep's can be slow
     return RegExp(Object.entries(parts)
         .map(([type, pattern]) => `(${pattern.source})`)
-        .join("|"), "g");
+        .join("|"), "gu");
 };
 function generateMapping(parts) {
     return [...Object.keys(parts)];
@@ -39,14 +51,40 @@ function generateMapping(parts) {
 const TOKEN_PARTS = {
     escape: /\\[\\*/_~`\[\]]/,
     bold: /\*\*/,
-    italic: /\/\//,
     underline: /__/,
+    italic: /(?:_|\*|\/\/)/,
     strikethrough: /~~/,
     codeblock: /```/,
-    code: /``/,
-    custom_start: /\[(?:.|\w+):/,
-    custom_end: /]/,
+    code: /`?`/,
+    spoiler: /\|\|/,
+    link: /https?:\/\/\S+\.[\p{Alphabetic}\d\/\\#?=+&%@!;:._~-]+/u,
+    link_contained: /<https?:\/\/\S+\.[\p{Alphabetic}\d\/\\#?=+&%@!;:._~-]+>/u,
+    emoji: EMOJI,
+    color: /\[#(?:\p{Hex_Digit}{3}|\p{Hex_Digit}{6}|reset)\]/,
+    custom_start: /\[(?:.|[\p{L}\p{N}\u{21}-\u{2F}_]+):/u,
+    custom_end: /\]/,
+    emoji_name: /:\w+:/,
     newline: /\r?\n/,
+    egg: /§([0-9a-fr])/,
+};
+const EGGS = {
+    "§0": "#000",
+    "§1": "#00A",
+    "§2": "#0A0",
+    "§3": "#0AA",
+    "§4": "#A00",
+    "§5": "#A0A",
+    "§6": "#FA0",
+    "§7": "#AAA",
+    "§8": "#555",
+    "§9": "#55F",
+    "§a": "#5F5",
+    "§b": "#5FF",
+    "§c": "#F55",
+    "§d": "#F5F",
+    "§e": "#FF5",
+    "§f": "#FFF",
+    "§r": "#reset",
 };
 // todo: manually do this
 const TOKENS = generateRegex(TOKEN_PARTS);
@@ -59,12 +97,13 @@ function tokenType(token) {
  * @returns A root text entitiy, meant to make entity rendering easier
  */
 export function parseMarkup(text) {
-    var _a, _b, _c;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l;
     let markers = [];
     let entities = [];
     let tokens = [...text.matchAll(TOKENS)];
     /** checks if a line is the beginning to or the end of a blockquote */
     function parseLine(indice) {
+        var _a, _b;
         const markerIndex = markers.findIndex((m) => m.type === "blockquote");
         // todo: this is nearly the same as the bold, italic, etc... family of parsing rules and can likely be simplified into a function
         //       for now though I'm keeping it like this for performance and the fear of micro-drying
@@ -72,6 +111,7 @@ export function parseMarkup(text) {
             const marker = markers[markerIndex];
             const innerSpan = { start: marker.span.end, end: indice.start };
             const outerSpan = { start: marker.span.start, end: indice.end };
+            checkColor(innerSpan);
             const [innerEntities, remainingEntities] = partition(entities, (e) => containsSpan(outerSpan, e.outerSpan));
             markers.splice(markerIndex);
             entities = remainingEntities;
@@ -84,12 +124,46 @@ export function parseMarkup(text) {
             });
         }
         if (text.startsWith("> ", indice.end)) {
+            // Temporarily limit checkColor scope to single lines.
+            checkColor({
+                start: (_b = (_a = entities[entities.length - 1]) === null || _a === void 0 ? void 0 : _a.outerSpan.end) !== null && _b !== void 0 ? _b : 0,
+                // Remove newline
+                end: indice.end - 1,
+            });
             markers.push({
                 type: "blockquote",
                 span: { start: indice.start, end: indice.end + 2 },
             });
         }
     }
+    const checkColor = (span) => {
+        const markerIndex = findLastIndex(markers, (m) => m.type === "color" &&
+            m.span.start >= span.start &&
+            span.end >= m.span.end);
+        if (markerIndex >= 0) {
+            const marker = markers[markerIndex];
+            const innerSpan = { start: marker.span.end, end: span.end };
+            const outerSpan = { start: marker.span.start, end: span.end };
+            const [innerEntities, remainingEntities] = partition(entities, (e) => containsSpan(outerSpan, e.innerSpan));
+            markers.splice(markerIndex);
+            entities = remainingEntities;
+            checkColor({
+                start: span.start,
+                end: outerSpan.start,
+            });
+            entities.push({
+                type: "color",
+                innerSpan,
+                outerSpan,
+                entities: innerEntities,
+                params: {
+                    color: marker.data,
+                },
+            });
+            return true;
+        }
+        return false;
+    };
     if (!tokens)
         throw new Error("Did not parse...");
     parseLine({ start: 0, end: 0 });
@@ -108,15 +182,38 @@ export function parseMarkup(text) {
             case "newline":
                 parseLine(indice);
                 break;
+            case "emoji_name": {
+                entities.push({
+                    type,
+                    innerSpan: { start: indice.start + 1, end: indice.end - 1 },
+                    outerSpan: indice,
+                    entities: [],
+                    params: {},
+                });
+                break;
+            }
+            case "emoji": {
+                entities.push({
+                    type,
+                    innerSpan: indice,
+                    outerSpan: indice,
+                    entities: [],
+                    params: {},
+                });
+                break;
+            }
             case "bold":
             case "italic":
+            case "spoiler":
             case "underline":
             case "strikethrough": {
-                const markerIndex = markers.findIndex((m) => m.type === type);
+                const data = token[0];
+                const markerIndex = markers.findIndex((m) => m.type === type && m.data == data);
                 if (markerIndex >= 0) {
                     const marker = markers[markerIndex];
                     const innerSpan = { start: marker.span.end, end: indice.start };
                     const outerSpan = { start: marker.span.start, end: indice.end };
+                    checkColor(innerSpan);
                     const [innerEntities, remainingEntities] = partition(entities, (e) => containsSpan(outerSpan, e.innerSpan));
                     markers.splice(markerIndex);
                     entities = remainingEntities;
@@ -132,13 +229,14 @@ export function parseMarkup(text) {
                     markers.push({
                         type: type,
                         span: indice,
+                        data: data,
                     });
                 }
                 break;
             }
             case "code": {
                 // because code doesn't have innerEntities, we can skip parsing those tokens
-                const markerIndex = tokens.findIndex((t, i) => i > pos && tokenType(t) === "code");
+                const markerIndex = tokens.findIndex((t, i) => i > pos && tokenType(t) === "code" && t[0] === token[0]);
                 if (markerIndex >= 0) {
                     const escapes = tokens.slice(pos, markerIndex).filter((e) => tokenType(e) === "escape");
                     const endToken = tokens[markerIndex];
@@ -146,6 +244,10 @@ export function parseMarkup(text) {
                         start: endToken.index,
                         end: endToken.index + endToken[0].length,
                     };
+                    checkColor({
+                        start: (_b = (_a = entities[entities.length - 1]) === null || _a === void 0 ? void 0 : _a.outerSpan.end) !== null && _b !== void 0 ? _b : 0,
+                        end: indice.start,
+                    });
                     // todo: write a better system that's more generalized for escaping
                     entities.push({
                         type: "code",
@@ -179,12 +281,16 @@ export function parseMarkup(text) {
                     langRegex.lastIndex = indice.end;
                     const args = langRegex.exec(text);
                     // remove the \n
-                    const lang = (_a = args === null || args === void 0 ? void 0 : args[0]) === null || _a === void 0 ? void 0 : _a.trim();
+                    const lang = (_c = args === null || args === void 0 ? void 0 : args[0]) === null || _c === void 0 ? void 0 : _c.trim();
+                    checkColor({
+                        start: (_e = (_d = entities[entities.length - 1]) === null || _d === void 0 ? void 0 : _d.outerSpan.end) !== null && _e !== void 0 ? _e : 0,
+                        end: indice.start,
+                    });
                     entities.push({
                         type: "codeblock",
                         // add the lang length to the innerSpan start to skip that when getting the text
                         innerSpan: {
-                            start: indice.end + ((_c = (_b = args === null || args === void 0 ? void 0 : args[0]) === null || _b === void 0 ? void 0 : _b.length) !== null && _c !== void 0 ? _c : 0),
+                            start: indice.end + ((_g = (_f = args === null || args === void 0 ? void 0 : args[0]) === null || _f === void 0 ? void 0 : _f.length) !== null && _g !== void 0 ? _g : 0),
                             end: endIndice.start,
                         },
                         outerSpan: { start: indice.start, end: endIndice.end },
@@ -203,6 +309,22 @@ export function parseMarkup(text) {
                 }
                 break;
             }
+            case "egg":
+            case "color": {
+                let color = type === "color"
+                    ? text.slice(indice.start + 1, indice.end - 1)
+                    : EGGS[text.slice(indice.start, indice.end)];
+                if (color === "#reset") {
+                    color = color.slice(1);
+                    checkColor(indice);
+                }
+                markers.push({
+                    type: "color",
+                    span: indice,
+                    data: color,
+                });
+                break;
+            }
             case "custom_start": {
                 const markerIndex = tokens.findIndex((t, i) => i > pos && tokenType(t) === "custom_end");
                 if (markerIndex >= 0) {
@@ -212,6 +334,10 @@ export function parseMarkup(text) {
                         start: endToken.index,
                         end: endToken.index + endToken[0].length,
                     };
+                    checkColor({
+                        start: (_j = (_h = entities[entities.length - 1]) === null || _h === void 0 ? void 0 : _h.outerSpan.end) !== null && _j !== void 0 ? _j : 0,
+                        end: indice.start,
+                    });
                     entities.push({
                         type: "custom",
                         innerSpan: { start: indice.end, end: endIndice.start },
@@ -227,6 +353,26 @@ export function parseMarkup(text) {
                     });
                     pos = markerIndex;
                 }
+                break;
+            }
+            case "link_contained": {
+                entities.push({
+                    type: "link",
+                    innerSpan: { start: indice.start + 1, end: indice.end - 1 },
+                    outerSpan: indice,
+                    entities: [],
+                    params: {},
+                });
+                break;
+            }
+            case "link": {
+                entities.push({
+                    type: "link",
+                    innerSpan: indice,
+                    outerSpan: indice,
+                    entities: [],
+                    params: {},
+                });
                 break;
             }
             case "escape": {
@@ -248,6 +394,10 @@ export function parseMarkup(text) {
         }
     }
     parseLine({ start: text.length, end: text.length });
+    checkColor({
+        start: (_l = (_k = entities[entities.length - 1]) === null || _k === void 0 ? void 0 : _k.outerSpan.end) !== null && _l !== void 0 ? _l : 0,
+        end: text.length,
+    });
     return ({
         type: "text",
         innerSpan: { start: 0, end: text.length },

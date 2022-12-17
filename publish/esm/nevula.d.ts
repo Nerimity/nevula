@@ -6,6 +6,8 @@ export declare class UnreachableCaseError extends Error {
 }
 /** Partition a list into two parts based on a boolean: `[true, false]` */
 export declare function partition<T>(list: T[], filter: (item: T) => boolean): [T[], T[]];
+/** Returns the index of the last element in the array where predicate is true, and -1 otherwise.  */
+export declare function findLastIndex<T>(list: T[], predicate: (item: T) => boolean): number;
 /** A span, similar to ranges in other languages */
 export declare type Span = {
     start: number;
@@ -25,20 +27,23 @@ export declare type EntityType<N, T = {}> = {
     params: T;
 };
 /** A text entity */
-export declare type Entity = EntityType<"text"> | EntityType<"bold"> | EntityType<"italic"> | EntityType<"underline"> | EntityType<"strikethrough"> | EntityType<"code"> | EntityType<"codeblock", {
+export declare type Entity = EntityType<"text"> | EntityType<"link"> | EntityType<"bold"> | EntityType<"italic"> | EntityType<"spoiler"> | EntityType<"underline"> | EntityType<"strikethrough"> | EntityType<"code"> | EntityType<"emoji"> | EntityType<"emoji_name"> | EntityType<"codeblock", {
     /** What language highlighting should be used to highlight the codeblock */
     lang?: string;
 }> | EntityType<"blockquote", {
     /** Not currently used, only typed for spec complience */
     borderColor?: string;
+}> | EntityType<"color", {
+    color: "reset" | `#${string}`;
 }> | EntityType<"custom", {
     /** The custom expression type */
     type: string;
 }>;
 /** A marker used for identifying and matching tokens  */
 export declare type Marker = {
-    type: "bold" | "italic" | "underline" | "strikethrough" | "blockquote";
+    type: "bold" | "italic" | "underline" | "spoiler" | "strikethrough" | "blockquote" | "color";
     span: Span;
+    data?: string;
 };
 /**
  * Parses a string into entities
