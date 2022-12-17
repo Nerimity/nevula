@@ -1,11 +1,14 @@
 {
-  "name": "nevula",
+  "name": "@nerimity/nevula",
   "version": "0.5.1",
   "description": "A (relatively) simple and (hopefully) performant markup parser",
   "main": "publish/node/nevula.js",
   "browser": "publish/esm/nevula.js",
   "types": "publish/esm/nevula.d.ts",
-  "repository": "https://github.com/Brecert/nevula.git",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Brecert/nevula.git"
+  },
   "author": "brecert <11599528+Brecert@users.noreply.github.com>",
   "license": "MIT",
   "files": [
@@ -25,5 +28,12 @@
   ],
   "devDependencies": {
     "typescript": "^4.2.3"
+  },
+  "bugs": {
+    "url": "https://github.com/Brecert/nevula/issues"
+  },
+  "homepage": "https://github.com/Brecert/nevula#readme",
+  "directories": {
+    "example": "examples"
   }
 }
