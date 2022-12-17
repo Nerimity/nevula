@@ -14,7 +14,7 @@ import {
 
 import { Marked } from "https://deno.land/x/markdown@v2.0.0/mod.ts";
 
-import { addTextSpans, parseMarkup } from "./nevula.ts";
+import { addTextSpans, parseMarkup } from "./markup.ts";
 
 const RUNS = 2500;
 
@@ -41,21 +41,21 @@ bench({
 });
 
 bench({
-  name: "nevula with inserted text spans",
-  runs: RUNS,
-  func(b): void {
-    b.start();
-    addTextSpans(parseMarkup(SAMPLE));
-    b.stop();
-  },
-});
-
-bench({
   name: "/x/markdown@v2.0.0 (based on an older version of Marked)",
   runs: RUNS,
   func(b): void {
     b.start();
     Marked.parse(SAMPLE);
+    b.stop();
+  },
+});
+
+bench({
+  name: "nevula with inserted text spans",
+  runs: RUNS,
+  func(b): void {
+    b.start();
+    addTextSpans(parseMarkup(SAMPLE));
     b.stop();
   },
 });

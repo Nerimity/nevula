@@ -1,3 +1,7 @@
+// generated from: https://github.com/brecert/unicode-emoji-regex
+const EMOJI =
+  /(?:(?:(?:(?:(?:\p{Emoji})(?:\u{FE0F}))|(?:(?:\p{Emoji_Modifier_Base})(?:\p{Emoji_Modifier}))|(?:\p{Emoji}))(?:[\u{E0020}-\u{E007E}]+)(?:\u{E007F}))|(?:(?:(?:(?:\p{Emoji_Modifier_Base})(?:\p{Emoji_Modifier}))|(?:(?:\p{Emoji})(?:\u{FE0F}))|(?:\p{Emoji}))(?:(?:\u{200d})(?:(?:(?:\p{Emoji_Modifier_Base})(?:\p{Emoji_Modifier}))|(?:(?:\p{Emoji})(?:\u{FE0F}))|(?:\p{Emoji})))+)|(?:(?:(?:\p{Regional_Indicator})(?:\p{Regional_Indicator}))|(?:(?:\p{Emoji_Modifier_Base})(?:\p{Emoji_Modifier}))|(?:[0-9#*]\u{FE0F}\u{20E3})|(?:(?:\p{Emoji})(?:\u{FE0F}))))|\p{Emoji_Presentation}|\p{Extended_Pictographic}/u;
+
 /** Checks if `largeSpan` can contain `smallSpan` */
 export function containsSpan(largeSpan: Span, smallSpan: Span): boolean {
   return largeSpan.start <= smallSpan.start && smallSpan.end <= largeSpan.end;
@@ -24,6 +28,18 @@ export function partition<T>(list: T[], filter: (item: T) => boolean) {
   return result;
 }
 
+/** Returns the index of the last element in the array where predicate is true, and -1 otherwise.  */
+export function findLastIndex<T>(list: T[], predicate: (item: T) => boolean) {
+  for (let i = list.length - 1; i >= 0; i--) {
+    const item = list[i];
+
+    if (predicate(item)) {
+      return i;
+    }
+  }
+  return -1;
+}
+
 /** A span, similar to ranges in other languages */
 export type Span = { start: number; end: number };
 
@@ -44,11 +60,15 @@ export type EntityType<N, T = {}> = {
 /** A text entity */
 export type Entity =
   | EntityType<"text">
+  | EntityType<"link">
   | EntityType<"bold">
   | EntityType<"italic">
+  | EntityType<"spoiler">
   | EntityType<"underline">
   | EntityType<"strikethrough">
   | EntityType<"code">
+  | EntityType<"emoji">
+  | EntityType<"emoji_name">
   | EntityType<"codeblock", {
     // todo: describe better
     /** What language highlighting should be used to highlight the codeblock */
@@ -58,14 +78,17 @@ export type Entity =
     /** Not currently used, only typed for spec complience */
     borderColor?: string;
   }>
+  | EntityType<"color", {
+    color: "reset" | `#${string}`;
+  }>
   | EntityType<"custom", {
     /** The custom expression type */
     type: string;
   }>;
 
-/** 
+/**
  * Generate a global regex from a record
- * 
+ *
  * each name will become a named capture group
  * */
 const generateRegex = (parts: Record<string, RegExp>) => {
@@ -74,7 +97,7 @@ const generateRegex = (parts: Record<string, RegExp>) => {
     Object.entries(parts)
       .map(([type, pattern]) => `(${pattern.source})`)
       .join("|"),
-    "g",
+    "gu",
   );
 };
 
@@ -85,14 +108,41 @@ function generateMapping<T extends string>(parts: Record<T, RegExp>): T[] {
 const TOKEN_PARTS = {
   escape: /\\[\\*/_~`\[\]]/,
   bold: /\*\*/,
-  italic: /\/\//,
   underline: /__/,
+  italic: /(?:_|\*|\/\/)/,
   strikethrough: /~~/,
   codeblock: /```/,
-  code: /``/,
-  custom_start: /\[(?:.|\w+):/,
-  custom_end: /]/,
+  code: /`?`/,
+  spoiler: /\|\|/,
+  link: /https?:\/\/\S+\.[\p{Alphabetic}\d\/\\#?=+&%@!;:._~-]+/u,
+  link_contained: /<https?:\/\/\S+\.[\p{Alphabetic}\d\/\\#?=+&%@!;:._~-]+>/u,
+  emoji: EMOJI,
+  color: /\[#(?:\p{Hex_Digit}{3}|\p{Hex_Digit}{6}|reset)\]/,
+  custom_start: /\[(?:.|[\p{L}\p{N}\u{21}-\u{2F}_]+):/u,
+  custom_end: /\]/,
+  emoji_name: /:\w+:/,
   newline: /\r?\n/,
+  egg: /§([0-9a-fr])/,
+};
+
+const EGGS: Record<string, string> = {
+  "§0": "#000",
+  "§1": "#00A",
+  "§2": "#0A0",
+  "§3": "#0AA",
+  "§4": "#A00",
+  "§5": "#A0A",
+  "§6": "#FA0",
+  "§7": "#AAA",
+  "§8": "#555",
+  "§9": "#55F",
+  "§a": "#5F5",
+  "§b": "#5FF",
+  "§c": "#F55",
+  "§d": "#F5F",
+  "§e": "#FF5",
+  "§f": "#FFF",
+  "§r": "#reset",
 };
 
 // todo: manually do this
@@ -105,8 +155,16 @@ function tokenType(token: RegExpMatchArray) {
 
 /** A marker used for identifying and matching tokens  */
 export type Marker = {
-  type: "bold" | "italic" | "underline" | "strikethrough" | "blockquote";
+  type:
+    | "bold"
+    | "italic"
+    | "underline"
+    | "spoiler"
+    | "strikethrough"
+    | "blockquote"
+    | "color";
   span: Span;
+  data?: string;
 };
 
 /**
@@ -130,6 +188,8 @@ export function parseMarkup(text: string): Entity {
       const innerSpan = { start: marker.span.end, end: indice.start };
       const outerSpan = { start: marker.span.start, end: indice.end };
 
+      checkColor(innerSpan);
+
       const [innerEntities, remainingEntities] = partition(
         entities,
         (e) => containsSpan(outerSpan, e.outerSpan),
@@ -147,12 +207,63 @@ export function parseMarkup(text: string): Entity {
     }
 
     if (text.startsWith("> ", indice.end)) {
+      // Temporarily limit checkColor scope to single lines.
+      checkColor({
+        start: entities[entities.length - 1]?.outerSpan.end ?? 0,
+        // Remove newline
+        end: indice.end - 1,
+      });
+
       markers.push({
         type: "blockquote",
         span: { start: indice.start, end: indice.end + 2 },
       });
     }
   }
+
+  const checkColor = (span: Span) => {
+    const markerIndex = findLastIndex(
+      markers,
+      (m) =>
+        m.type === "color" &&
+        m.span.start >= span.start &&
+        span.end >= m.span.end,
+    );
+
+    if (markerIndex >= 0) {
+      const marker = markers[markerIndex];
+
+      const innerSpan = { start: marker.span.end, end: span.end };
+      const outerSpan = { start: marker.span.start, end: span.end };
+
+      const [innerEntities, remainingEntities] = partition(
+        entities,
+        (e) => containsSpan(outerSpan, e.innerSpan),
+      );
+
+      markers.splice(markerIndex);
+      entities = remainingEntities;
+
+      checkColor({
+        start: span.start,
+        end: outerSpan.start,
+      });
+
+      entities.push({
+        type: "color",
+        innerSpan,
+        outerSpan,
+        entities: innerEntities,
+        params: {
+          color: marker.data! as `#${string}` | `reset`,
+        },
+      });
+
+      return true;
+    }
+
+    return false;
+  };
 
   if (!tokens) throw new Error("Did not parse...");
 
@@ -175,16 +286,42 @@ export function parseMarkup(text: string): Entity {
       case "newline":
         parseLine(indice);
         break;
+      case "emoji_name": {
+        entities.push({
+          type,
+          innerSpan: { start: indice.start + 1, end: indice.end - 1 },
+          outerSpan: indice,
+          entities: [],
+          params: {},
+        });
+        break;
+      }
+      case "emoji": {
+        entities.push({
+          type,
+          innerSpan: indice,
+          outerSpan: indice,
+          entities: [],
+          params: {},
+        });
+        break;
+      }
       case "bold":
       case "italic":
+      case "spoiler":
       case "underline":
       case "strikethrough": {
-        const markerIndex = markers.findIndex((m) => m.type === type);
+        const data = token[0];
+        const markerIndex = markers.findIndex((m) =>
+          m.type === type && m.data == data
+        );
         if (markerIndex >= 0) {
           const marker = markers[markerIndex];
 
           const innerSpan = { start: marker.span.end, end: indice.start };
           const outerSpan = { start: marker.span.start, end: indice.end };
+
+          checkColor(innerSpan);
 
           const [innerEntities, remainingEntities] = partition(
             entities,
@@ -204,6 +341,7 @@ export function parseMarkup(text: string): Entity {
           markers.push({
             type: type,
             span: indice,
+            data: data,
           });
         }
 
@@ -212,7 +350,7 @@ export function parseMarkup(text: string): Entity {
       case "code": {
         // because code doesn't have innerEntities, we can skip parsing those tokens
         const markerIndex = tokens.findIndex((t, i) =>
-          i > pos && tokenType(t) === "code"
+          i > pos && tokenType(t) === "code" && t[0] === token[0]
         );
         if (markerIndex >= 0) {
           const escapes = tokens.slice(pos, markerIndex).filter((e) =>
@@ -223,6 +361,11 @@ export function parseMarkup(text: string): Entity {
             start: endToken.index!,
             end: endToken.index! + endToken[0].length,
           };
+
+          checkColor({
+            start: entities[entities.length - 1]?.outerSpan.end ?? 0,
+            end: indice.start,
+          });
 
           // todo: write a better system that's more generalized for escaping
           entities.push({
@@ -264,6 +407,11 @@ export function parseMarkup(text: string): Entity {
           // remove the \n
           const lang = args?.[0]?.trim();
 
+          checkColor({
+            start: entities[entities.length - 1]?.outerSpan.end ?? 0,
+            end: indice.start,
+          });
+
           entities.push({
             type: "codeblock",
             // add the lang length to the innerSpan start to skip that when getting the text
@@ -288,6 +436,25 @@ export function parseMarkup(text: string): Entity {
         }
         break;
       }
+      case "egg":
+      case "color": {
+        let color = type === "color"
+          ? text.slice(indice.start + 1, indice.end - 1)
+          : EGGS[text.slice(indice.start, indice.end)];
+
+        if (color === "#reset") {
+          color = color.slice(1);
+          checkColor(indice);
+        }
+
+        markers.push({
+          type: "color",
+          span: indice,
+          data: color,
+        });
+
+        break;
+      }
       case "custom_start": {
         const markerIndex = tokens.findIndex((t, i) =>
           i > pos && tokenType(t) === "custom_end"
@@ -301,6 +468,11 @@ export function parseMarkup(text: string): Entity {
             start: endToken.index!,
             end: endToken.index! + endToken[0].length,
           };
+
+          checkColor({
+            start: entities[entities.length - 1]?.outerSpan.end ?? 0,
+            end: indice.start,
+          });
 
           entities.push({
             type: "custom",
@@ -318,6 +490,26 @@ export function parseMarkup(text: string): Entity {
 
           pos = markerIndex;
         }
+        break;
+      }
+      case "link_contained": {
+        entities.push({
+          type: "link",
+          innerSpan: { start: indice.start + 1, end: indice.end - 1 },
+          outerSpan: indice,
+          entities: [],
+          params: {},
+        });
+        break;
+      }
+      case "link": {
+        entities.push({
+          type: "link",
+          innerSpan: indice,
+          outerSpan: indice,
+          entities: [],
+          params: {},
+        });
         break;
       }
       case "escape": {
@@ -339,6 +531,10 @@ export function parseMarkup(text: string): Entity {
     }
   }
   parseLine({ start: text.length, end: text.length });
+  checkColor({
+    start: entities[entities.length - 1]?.outerSpan.end ?? 0,
+    end: text.length,
+  });
 
   return ({
     type: "text",

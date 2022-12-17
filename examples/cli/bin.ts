@@ -1,3 +1,5 @@
+// deno run -A ./examples/cli/bin.ts examples/example.nv examples/cli/example.out.html
+
 import h from "https://cdn.skypack.dev/vhtml?dts";
 import {
   addTextSpans,
@@ -10,6 +12,14 @@ import {
 interface Context {
   text: string;
 }
+
+const EMOJI_NAMES: Record<string, string> = {
+  sparkles: "✨",
+};
+
+const EMOJI_NAMES_REV: Record<string, string> = {
+  "✨": "sparkles",
+};
 
 const sliceText = (ctx: Context, span: Span) =>
   ctx.text.slice(span.start, span.end);
@@ -25,6 +35,30 @@ function transformEntity(entity: Entity, ctx: Context): string {
       } else {
         return sliceText(ctx, entity.innerSpan);
       }
+    }
+    case "emoji": {
+      let emoji = sliceText(ctx, entity.innerSpan);
+      let name = EMOJI_NAMES_REV[emoji];
+      if (name) {
+        return h("span", { class: `emoji-${name}` }, emoji);
+      } else {
+        return emoji;
+      }
+    }
+    case "emoji_name": {
+      let name = sliceText(ctx, entity.innerSpan);
+      if (name in EMOJI_NAMES) {
+        return h("span", { class: `emoji-${name}` }, EMOJI_NAMES[name]);
+      } else {
+        return sliceText(ctx, entity.outerSpan);
+      }
+    }
+    case "spoiler": {
+      return h(
+        "span",
+        { class: "spoiler" },
+        transformEntities(entity.entities, ctx),
+      );
     }
     case "bold":
     case "italic":
@@ -48,8 +82,24 @@ function transformEntity(entity: Entity, ctx: Context): string {
     case "custom": {
       return transformCustomEntity(entity, ctx);
     }
+    case "link": {
+      const url = sliceText(ctx, entity.innerSpan);
+      return h("a", { href: url }, url);
+    }
+    case "color": {
+      const { color } = entity.params;
+      if (color.startsWith("#")) {
+        return h(
+          "span",
+          { style: `color: ${entity.params.color}` },
+          transformEntities(entity.entities, ctx),
+        );
+      } else {
+        return transformEntities(entity.entities, ctx).join("");
+      }
+    }
     default: {
-      throw new UnreachableCaseError(entity["type"] as never);
+      throw new UnreachableCaseError(entity);
     }
   }
 }
@@ -104,6 +154,27 @@ const html = `
 <html>
   <head>
     <title>nevula markup cli example</title>
+    <meta charset="UTF-8">
+    <style>
+      .spoiler {
+        position: relative;
+        contain: content;
+      }
+      .spoiler::after {
+        content: "";
+        position: absolute;
+        border-radius: 4px;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #222;
+        z-index: 1;
+      }
+      .spoiler:hover:after {
+        opacity: 0;
+      }
+    </style>
   </head>
   <body style="white-space: pre-line">
     ${transformEntity(entity, { text: file })}

@@ -2,17 +2,45 @@
 <html>
   <head>
     <title>nevula markup cli example</title>
+    <meta charset="UTF-8">
+    <style>
+      .spoiler {
+        position: relative;
+        contain: content;
+      }
+      .spoiler::after {
+        content: "";
+        position: absolute;
+        border-radius: 4px;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #222;
+        z-index: 1;
+      }
+      .spoiler:hover:after {
+        opacity: 0;
+      }
+    </style>
   </head>
   <body style="white-space: pre-line">
     normal text
 <b>bold</b>
 <i>italic</i>
+<i>italic</i>
+<i>italic</i>
 <u>underline</u>
+<span class="spoiler">spoiler</span>
+<code>code</code>
 <code>code</code>
 <pre><code>codeblock</code></pre>
+<span class="emoji-sparkles">✨</span> <span class="emoji-sparkles">✨</span>
+<a href="https://example.com">https://example.com</a>
+<span style="color: #b73"> color test </span> no color
 <ruby>ブリー<rp>(</rp><rt>Bree</rt><rp>)</rp></ruby>
 お<ruby>元気<rp>(</rp><rt>げんき</rt><rp>)</rp></ruby>ですか
 <a href="https://example.com">custom link alias</a><blockquote>blockquote</blockquote>Example:
-<code>&gt; normal **bold //italic// __under``__line__``__**</code><blockquote>normal <b>bold <i>italic</i> <u>under<code>__line__</code></u></b></blockquote>
+<code>&gt; normal **bold //italic// __under``__line__``__** :sparkles: ✨</code><blockquote>normal <b>bold <i><span style="color: #b37"> italic</span></i> <u>under<code>__line__</code></u></b> <span class="emoji-sparkles">✨</span> <span class="emoji-sparkles">✨</span></blockquote>
   </body>
 </html>
