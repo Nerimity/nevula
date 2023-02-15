@@ -1,5 +1,5 @@
 # Nevula
-> A (relatively) simple and (hopefully) performant markup parser made for nertivia.
+> A (relatively) simple and (hopefully) performant markup parser made for nerimity.
 
 **Please note, this is not a markdown parser, this is its own special markup format called nevula, a specification for this format is a work in progress.**
 

@@ -12,7 +12,7 @@
   "author": "brecert <11599528+Brecert@users.noreply.github.com>",
   "license": "MIT",
   "files": [
-    "markup.ts",
+    "nevula.ts",
     "publish/esm/*",
     "publish/node/*"
   ],
@@ -25,10 +25,10 @@
     "update:bench": "deno run --allow-write --allow-read --allow-hrtime ./bench.ts update-readme"
   },
   "keywords": [
-    "markup",
+    "nevula",
     "language",
     "parser",
-    "nertivia"
+    "nerimity"
   ],
   "devDependencies": {
     "typescript": "^4.9.5"
