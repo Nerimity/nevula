@@ -9,12 +9,12 @@ export declare function partition<T>(list: T[], filter: (item: T) => boolean): [
 /** Returns the index of the last element in the array where predicate is true, and -1 otherwise.  */
 export declare function findLastIndex<T>(list: T[], predicate: (item: T) => boolean): number;
 /** A span, similar to ranges in other languages */
-export declare type Span = {
+export type Span = {
     start: number;
     end: number;
 };
 /** A generic type meant to make making entities easier and more consistent */
-export declare type EntityType<N, T = {}> = {
+export type EntityType<N, T = {}> = {
     /** The entity type */
     type: N;
     /** The inner text span, similar to innerText */
@@ -27,7 +27,7 @@ export declare type EntityType<N, T = {}> = {
     params: T;
 };
 /** A text entity */
-export declare type Entity = EntityType<"text"> | EntityType<"link"> | EntityType<"bold"> | EntityType<"italic"> | EntityType<"spoiler"> | EntityType<"underline"> | EntityType<"strikethrough"> | EntityType<"code"> | EntityType<"emoji"> | EntityType<"emoji_name"> | EntityType<"codeblock", {
+export type Entity = EntityType<"text"> | EntityType<"link"> | EntityType<"bold"> | EntityType<"italic"> | EntityType<"spoiler"> | EntityType<"underline"> | EntityType<"strikethrough"> | EntityType<"code"> | EntityType<"emoji"> | EntityType<"emoji_name"> | EntityType<"codeblock", {
     /** What language highlighting should be used to highlight the codeblock */
     lang?: string;
 }> | EntityType<"blockquote", {
@@ -40,7 +40,7 @@ export declare type Entity = EntityType<"text"> | EntityType<"link"> | EntityTyp
     type: string;
 }>;
 /** A marker used for identifying and matching tokens  */
-export declare type Marker = {
+export type Marker = {
     type: "bold" | "italic" | "underline" | "spoiler" | "strikethrough" | "blockquote" | "color";
     span: Span;
     data?: string;
