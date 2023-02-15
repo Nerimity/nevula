@@ -10,7 +10,7 @@
     "noImplicitReturns": true
   },
   "include": [
-    "nevula.ts"
+    "markup.ts"
   ],
   "exclude": [
     "node_modules",

@@ -31,7 +31,7 @@ const INITIAL_SAMPLE = `
 const SAMPLE = INITIAL_SAMPLE.repeat(7);
 
 bench({
-  name: "nevula",
+  name: "nertivia markup",
   runs: RUNS,
   func(b): void {
     b.start();

@@ -733,11 +733,13 @@ Deno.test("color should work with code and codeblocks", () => {
   assertEquals(
     textNodes,
     ["text", {}, [
-      ["color", { color: "#f01" }, [["text", {}, " 1 "]]],
-      ["code", {}, [["text", {}, "2"]]],
-      ["text", {}, " 3 "],
-      ["color", { color: "#f04" }, [["text", {}, " 4 "]]],
-      ["color", { color: "#f05" }, [["text", {}, " 5"]]],
+      ["color", { color: "#f01" }, [
+        ["text", {}, " 1 "],
+        ["code", {}, [["text", {}, "2"]]],
+        ["text", {}, " 3 "],
+        ["color", { color: "#f04" }, [["text", {}, " 4 "]]],
+        ["color", { color: "#f05" }, [["text", {}, " 5"]]],
+      ]],
     ]],
   );
 });
@@ -750,6 +752,25 @@ Deno.test("color should work with custom entities", () => {
     ["text", {}, [
       ["color", { color: "#f01" }, [["text", {}, " 1 "]]],
       ["custom", { type: "test" }, [["text", {}, " hello world!"]]],
+    ]],
+  );
+});
+
+Deno.test("color should work with multiple entities", () => {
+  let text = "**bold** [#ff0011] **test `code`**";
+  let textNodes = entitySlices(text, addTextSpans(parseMarkup(text)));
+  assertEquals(
+    textNodes,
+    ["text", {}, [
+      ["bold", {}, [["text", {}, "bold"]]],
+      ["text", {}, " "],
+      ["color", { color: "#ff0011" }, [
+        ["text", {}, " "],
+        ["bold", {}, [
+          ["text", {}, "test "],
+          ["code", {}, [["text", {}, "code"]]],
+        ]],
+      ]],
     ]],
   );
 });
