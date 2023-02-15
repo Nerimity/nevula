@@ -90,7 +90,7 @@ export type Entity =
  * Generate a global regex from a record
  *
  * each name will become a named capture group
- * */
+ */
 const generateRegex = (parts: Record<string, RegExp>) => {
   // todo: named grouped regexep's can be slow
   return RegExp(
@@ -362,8 +362,10 @@ export function parseMarkup(text: string): Entity {
             end: endToken.index! + endToken[0].length,
           };
 
+          // why does this work?
+          // todo: verify behavior
           checkColor({
-            start: entities[entities.length - 1]?.outerSpan.end ?? 0,
+            start: indice.start,
             end: indice.start,
           });
 
@@ -535,6 +537,12 @@ export function parseMarkup(text: string): Entity {
     start: entities[entities.length - 1]?.outerSpan.end ?? 0,
     end: text.length,
   });
+  if (entities.length > 0) {
+    checkColor({
+      start: 0,
+      end: text.length,
+    });
+  }
 
   return ({
     type: "text",
