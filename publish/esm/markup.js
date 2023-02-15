@@ -38,7 +38,7 @@ export function findLastIndex(list, predicate) {
  * Generate a global regex from a record
  *
  * each name will become a named capture group
- * */
+ */
 const generateRegex = (parts) => {
     // todo: named grouped regexep's can be slow
     return RegExp(Object.entries(parts)
@@ -97,7 +97,7 @@ function tokenType(token) {
  * @returns A root text entitiy, meant to make entity rendering easier
  */
 export function parseMarkup(text) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _j;
     let markers = [];
     let entities = [];
     let tokens = [...text.matchAll(TOKENS)];
@@ -244,8 +244,10 @@ export function parseMarkup(text) {
                         start: endToken.index,
                         end: endToken.index + endToken[0].length,
                     };
+                    // why does this work?
+                    // todo: verify behavior
                     checkColor({
-                        start: (_b = (_a = entities[entities.length - 1]) === null || _a === void 0 ? void 0 : _a.outerSpan.end) !== null && _b !== void 0 ? _b : 0,
+                        start: indice.start,
                         end: indice.start,
                     });
                     // todo: write a better system that's more generalized for escaping
@@ -281,16 +283,16 @@ export function parseMarkup(text) {
                     langRegex.lastIndex = indice.end;
                     const args = langRegex.exec(text);
                     // remove the \n
-                    const lang = (_c = args === null || args === void 0 ? void 0 : args[0]) === null || _c === void 0 ? void 0 : _c.trim();
+                    const lang = (_a = args === null || args === void 0 ? void 0 : args[0]) === null || _a === void 0 ? void 0 : _a.trim();
                     checkColor({
-                        start: (_e = (_d = entities[entities.length - 1]) === null || _d === void 0 ? void 0 : _d.outerSpan.end) !== null && _e !== void 0 ? _e : 0,
+                        start: (_c = (_b = entities[entities.length - 1]) === null || _b === void 0 ? void 0 : _b.outerSpan.end) !== null && _c !== void 0 ? _c : 0,
                         end: indice.start,
                     });
                     entities.push({
                         type: "codeblock",
                         // add the lang length to the innerSpan start to skip that when getting the text
                         innerSpan: {
-                            start: indice.end + ((_g = (_f = args === null || args === void 0 ? void 0 : args[0]) === null || _f === void 0 ? void 0 : _f.length) !== null && _g !== void 0 ? _g : 0),
+                            start: indice.end + ((_e = (_d = args === null || args === void 0 ? void 0 : args[0]) === null || _d === void 0 ? void 0 : _d.length) !== null && _e !== void 0 ? _e : 0),
                             end: endIndice.start,
                         },
                         outerSpan: { start: indice.start, end: endIndice.end },
@@ -335,7 +337,7 @@ export function parseMarkup(text) {
                         end: endToken.index + endToken[0].length,
                     };
                     checkColor({
-                        start: (_j = (_h = entities[entities.length - 1]) === null || _h === void 0 ? void 0 : _h.outerSpan.end) !== null && _j !== void 0 ? _j : 0,
+                        start: (_g = (_f = entities[entities.length - 1]) === null || _f === void 0 ? void 0 : _f.outerSpan.end) !== null && _g !== void 0 ? _g : 0,
                         end: indice.start,
                     });
                     entities.push({
@@ -395,9 +397,15 @@ export function parseMarkup(text) {
     }
     parseLine({ start: text.length, end: text.length });
     checkColor({
-        start: (_l = (_k = entities[entities.length - 1]) === null || _k === void 0 ? void 0 : _k.outerSpan.end) !== null && _l !== void 0 ? _l : 0,
+        start: (_j = (_h = entities[entities.length - 1]) === null || _h === void 0 ? void 0 : _h.outerSpan.end) !== null && _j !== void 0 ? _j : 0,
         end: text.length,
     });
+    if (entities.length > 0) {
+        checkColor({
+            start: 0,
+            end: text.length,
+        });
+    }
     return ({
         type: "text",
         innerSpan: { start: 0, end: text.length },
