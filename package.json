@@ -7,7 +7,7 @@
   "types": "publish/esm/nevula.d.ts",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Brecert/nevula.git"
+    "url": "git+https://github.com/Nerimity/nevula.git"
   },
   "author": "brecert <11599528+Brecert@users.noreply.github.com>",
   "license": "MIT",
@@ -19,20 +19,21 @@
   "scripts": {
     "build": "tsc --build tsconfig.esm.json && tsc --build tsconfig.node.json",
     "bench": "deno run --allow-hrtime bench.ts",
-    "test": "deno test"
+    "test": "deno test",
+    "update": "yarn test && yarn update:example && yarn update:bench && yarn build",
+    "update:example": "deno run -A ./examples/cli/bin.ts examples/example.nv examples/cli/example.out.html",
+    "update:bench": "deno run --allow-write --allow-read --allow-hrtime ./bench.ts update-readme"
   },
   "keywords": [
-    "markup",
+    "nevula",
     "language",
-    "parser"
+    "parser",
+    "nerimity"
   ],
   "devDependencies": {
-    "typescript": "^4.2.3"
+    "typescript": "^4.9.5"
   },
-  "bugs": {
-    "url": "https://github.com/Brecert/nevula/issues"
-  },
-  "homepage": "https://github.com/Brecert/nevula#readme",
+  "homepage": "https://github.com/Nerimity/nevula#readme",
   "directories": {
     "example": "examples"
   }

@@ -1,5 +1,5 @@
-# nevula
-> A (relatively) simple and (hopefully) performant markup parser.
+# Nevula
+> A (relatively) simple and (hopefully) performant markup parser made for nerimity.
 
 **Please note, this is not a markdown parser, this is its own special markup format called nevula, a specification for this format is a work in progress.**
 
@@ -19,7 +19,7 @@ An example of this is the italic syntax, `//` looks slanted like italicized text
 see: [Benchmarks](#Benchmarks)
 
 # Benchmarks
-Just to be clear, many types of benchmarks will favour nevula because of it's smaller surface area compared to something like a full markdown parser.
+Just to be clear, many types of benchmarks will favour this markup because of it's smaller surface area compared to something like a full markdown parser.
 
 <!-- BENCHMARKS START -->
 ## Simple Markup
