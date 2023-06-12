@@ -1,4 +1,5 @@
 // generated from: https://github.com/brecert/unicode-emoji-regex
+const isReactNative = typeof navigator !== 'undefined' && navigator.product === 'ReactNative';
 const EMOJI =
   /(?:(?:(?:(?:(?:\p{Emoji})(?:\u{FE0F}))|(?:(?:\p{Emoji_Modifier_Base})(?:\p{Emoji_Modifier}))|(?:\p{Emoji}))(?:[\u{E0020}-\u{E007E}]+)(?:\u{E007F}))|(?:(?:(?:(?:\p{Emoji_Modifier_Base})(?:\p{Emoji_Modifier}))|(?:(?:\p{Emoji})(?:\u{FE0F}))|(?:\p{Emoji}))(?:(?:\u{200d})(?:(?:(?:\p{Emoji_Modifier_Base})(?:\p{Emoji_Modifier}))|(?:(?:\p{Emoji})(?:\u{FE0F}))|(?:\p{Emoji})))+)|(?:(?:(?:\p{Regional_Indicator})(?:\p{Regional_Indicator}))|(?:(?:\p{Emoji_Modifier_Base})(?:\p{Emoji_Modifier}))|(?:[0-9#*]\u{FE0F}\u{20E3})|(?:(?:\p{Emoji})(?:\u{FE0F}))))|\p{Emoji_Presentation}|\p{Extended_Pictographic}/u;
 
@@ -97,7 +98,7 @@ const generateRegex = (parts: Record<string, RegExp>) => {
     Object.entries(parts)
       .map(([type, pattern]) => `(${pattern.source})`)
       .join("|"),
-    "gu",
+      isReactNative ? "g" : "gu",
   );
 };
 
@@ -117,7 +118,7 @@ const TOKEN_PARTS = {
   link: /https?:\/\/\S+\.[\p{Alphabetic}\d\/\\#?=+&%@!;:._~-]+/u,
   link_contained: /<https?:\/\/\S+\.[\p{Alphabetic}\d\/\\#?=+&%@!;:._~-]+>/u,
   emoji: EMOJI,
-  color: /\[#(?:\p{Hex_Digit}{3}|\p{Hex_Digit}{6}|reset)\]/,
+  color: isReactNative ? /\[#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6}|reset)\]/ : /\[#(?:\p{Hex_Digit}{3}|\p{Hex_Digit}{6}|reset)\]/,
   custom_start: /\[(?:.|[\p{L}\p{N}\u{21}-\u{2F}_]+):/u,
   custom_end: /\]/,
   emoji_name: /:\w+:/,
