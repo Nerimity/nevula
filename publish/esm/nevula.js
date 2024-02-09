@@ -1,5 +1,6 @@
+//@ts-nocheck
 // generated from: https://github.com/brecert/unicode-emoji-regex
-const isReactNative = typeof navigator !== 'undefined' && navigator.product === 'ReactNative';
+const isReactNative = typeof navigator !== "undefined" && navigator.product === "ReactNative";
 const EMOJI = /(?:(?:(?:(?:(?:\p{Emoji})(?:\u{FE0F}))|(?:(?:\p{Emoji_Modifier_Base})(?:\p{Emoji_Modifier}))|(?:\p{Emoji}))(?:[\u{E0020}-\u{E007E}]+)(?:\u{E007F}))|(?:(?:(?:(?:\p{Emoji_Modifier_Base})(?:\p{Emoji_Modifier}))|(?:(?:\p{Emoji})(?:\u{FE0F}))|(?:\p{Emoji}))(?:(?:\u{200d})(?:(?:(?:\p{Emoji_Modifier_Base})(?:\p{Emoji_Modifier}))|(?:(?:\p{Emoji})(?:\u{FE0F}))|(?:\p{Emoji})))+)|(?:(?:(?:\p{Regional_Indicator})(?:\p{Regional_Indicator}))|(?:(?:\p{Emoji_Modifier_Base})(?:\p{Emoji_Modifier}))|(?:[0-9#*]\u{FE0F}\u{20E3})|(?:(?:\p{Emoji})(?:\u{FE0F}))))|\p{Emoji_Presentation}|\p{Extended_Pictographic}/u;
 /** Checks if `largeSpan` can contain `smallSpan` */
 export function containsSpan(largeSpan, smallSpan) {
@@ -13,7 +14,7 @@ export class UnreachableCaseError extends Error {
 }
 /** Partition a list into two parts based on a boolean: `[true, false]` */
 export function partition(list, filter) {
-    let result = [[], []];
+    const result = [[], []];
     for (let i = 0; i < list.length; i++) {
         const item = list[i];
         if (filter(item)) {
@@ -58,6 +59,7 @@ const TOKEN_PARTS = {
     codeblock: /```/,
     code: /`?`/,
     spoiler: /\|\|/,
+    named_link: /\[(?:.|[\s*\p{L}\p{N}\u{21}-\u{2F}_]+)\]\(https?:\/\/\S+\.[\p{Alphabetic}\d/\\#?=+&%@!;:._~-]+\)/u,
     link: /https?:\/\/\S+\.[\p{Alphabetic}\d\/\\#?=+&%@!;:._~-]+/u,
     link_contained: /<https?:\/\/\S+\.[\p{Alphabetic}\d\/\\#?=+&%@!;:._~-]+>/u,
     emoji: EMOJI,
@@ -66,7 +68,7 @@ const TOKEN_PARTS = {
     custom_end: /\]/,
     emoji_name: /:\w+:/,
     newline: /\r?\n/,
-    egg: /§([0-9a-fr])/,
+    egg: /§([0-9a-fr])/
 };
 const EGGS = {
     "§0": "#000",
@@ -85,7 +87,7 @@ const EGGS = {
     "§d": "#F5F",
     "§e": "#FF5",
     "§f": "#FFF",
-    "§r": "#reset",
+    "§r": "#reset"
 };
 // todo: manually do this
 const TOKENS = generateRegex(TOKEN_PARTS);
@@ -99,9 +101,9 @@ function tokenType(token) {
  */
 export function parseMarkup(text) {
     var _a, _b, _c, _d, _e, _f, _g, _h, _j;
-    let markers = [];
+    const markers = [];
     let entities = [];
-    let tokens = [...text.matchAll(TOKENS)];
+    const tokens = [...text.matchAll(TOKENS)];
     /** checks if a line is the beginning to or the end of a blockquote */
     function parseLine(indice) {
         var _a, _b;
@@ -121,7 +123,7 @@ export function parseMarkup(text) {
                 innerSpan,
                 outerSpan,
                 entities: innerEntities,
-                params: {},
+                params: {}
             });
         }
         if (text.startsWith("> ", indice.end)) {
@@ -129,11 +131,11 @@ export function parseMarkup(text) {
             checkColor({
                 start: (_b = (_a = entities[entities.length - 1]) === null || _a === void 0 ? void 0 : _a.outerSpan.end) !== null && _b !== void 0 ? _b : 0,
                 // Remove newline
-                end: indice.end - 1,
+                end: indice.end - 1
             });
             markers.push({
                 type: "blockquote",
-                span: { start: indice.start, end: indice.end + 2 },
+                span: { start: indice.start, end: indice.end + 2 }
             });
         }
     }
@@ -150,7 +152,7 @@ export function parseMarkup(text) {
             entities = remainingEntities;
             checkColor({
                 start: span.start,
-                end: outerSpan.start,
+                end: outerSpan.start
             });
             entities.push({
                 type: "color",
@@ -158,8 +160,8 @@ export function parseMarkup(text) {
                 outerSpan,
                 entities: innerEntities,
                 params: {
-                    color: marker.data,
-                },
+                    color: marker.data
+                }
             });
             return true;
         }
@@ -176,7 +178,7 @@ export function parseMarkup(text) {
         }
         const indice = {
             start: token.index,
-            end: token.index + token[0].length,
+            end: token.index + token[0].length
         };
         switch (type) {
             // newline is first because it's the most common and should match first for performance
@@ -189,7 +191,7 @@ export function parseMarkup(text) {
                     innerSpan: { start: indice.start + 1, end: indice.end - 1 },
                     outerSpan: indice,
                     entities: [],
-                    params: {},
+                    params: {}
                 });
                 break;
             }
@@ -199,7 +201,7 @@ export function parseMarkup(text) {
                     innerSpan: indice,
                     outerSpan: indice,
                     entities: [],
-                    params: {},
+                    params: {}
                 });
                 break;
             }
@@ -223,14 +225,14 @@ export function parseMarkup(text) {
                         innerSpan,
                         outerSpan,
                         entities: innerEntities,
-                        params: {},
+                        params: {}
                     });
                 }
                 else {
                     markers.push({
                         type: type,
                         span: indice,
-                        data: data,
+                        data: data
                     });
                 }
                 break;
@@ -243,13 +245,13 @@ export function parseMarkup(text) {
                     const endToken = tokens[markerIndex];
                     const endIndice = {
                         start: endToken.index,
-                        end: endToken.index + endToken[0].length,
+                        end: endToken.index + endToken[0].length
                     };
                     // why does this work?
                     // todo: verify behavior
                     checkColor({
                         start: indice.start,
-                        end: indice.start,
+                        end: indice.start
                     });
                     // todo: write a better system that's more generalized for escaping
                     entities.push({
@@ -261,9 +263,9 @@ export function parseMarkup(text) {
                             innerSpan: { start: m.index + 1, end: m.index + m[0].length },
                             outerSpan: { start: m.index, end: m.index + m[0].length },
                             entities: [],
-                            params: {},
+                            params: {}
                         })),
-                        params: {},
+                        params: {}
                     });
                     pos = markerIndex;
                 }
@@ -277,7 +279,7 @@ export function parseMarkup(text) {
                     const endToken = tokens[markerIndex];
                     const endIndice = {
                         start: endToken.index,
-                        end: endToken.index + endToken[0].length,
+                        end: endToken.index + endToken[0].length
                     };
                     // get lang param
                     const langRegex = /\w*\r?\n/y;
@@ -287,14 +289,14 @@ export function parseMarkup(text) {
                     const lang = (_a = args === null || args === void 0 ? void 0 : args[0]) === null || _a === void 0 ? void 0 : _a.trim();
                     checkColor({
                         start: (_c = (_b = entities[entities.length - 1]) === null || _b === void 0 ? void 0 : _b.outerSpan.end) !== null && _c !== void 0 ? _c : 0,
-                        end: indice.start,
+                        end: indice.start
                     });
                     entities.push({
                         type: "codeblock",
                         // add the lang length to the innerSpan start to skip that when getting the text
                         innerSpan: {
                             start: indice.end + ((_e = (_d = args === null || args === void 0 ? void 0 : args[0]) === null || _d === void 0 ? void 0 : _d.length) !== null && _e !== void 0 ? _e : 0),
-                            end: endIndice.start,
+                            end: endIndice.start
                         },
                         outerSpan: { start: indice.start, end: endIndice.end },
                         entities: escapes.map((m) => ({
@@ -302,11 +304,11 @@ export function parseMarkup(text) {
                             innerSpan: { start: m.index + 1, end: m.index + m[0].length },
                             outerSpan: { start: m.index, end: m.index + m[0].length },
                             entities: [],
-                            params: {},
+                            params: {}
                         })),
                         params: {
-                            lang: lang,
-                        },
+                            lang: lang
+                        }
                     });
                     pos = markerIndex;
                 }
@@ -324,7 +326,7 @@ export function parseMarkup(text) {
                 markers.push({
                     type: "color",
                     span: indice,
-                    data: color,
+                    data: color
                 });
                 break;
             }
@@ -335,11 +337,11 @@ export function parseMarkup(text) {
                     const endToken = tokens[markerIndex];
                     const endIndice = {
                         start: endToken.index,
-                        end: endToken.index + endToken[0].length,
+                        end: endToken.index + endToken[0].length
                     };
                     checkColor({
                         start: (_g = (_f = entities[entities.length - 1]) === null || _f === void 0 ? void 0 : _f.outerSpan.end) !== null && _g !== void 0 ? _g : 0,
-                        end: indice.start,
+                        end: indice.start
                     });
                     entities.push({
                         type: "custom",
@@ -350,9 +352,9 @@ export function parseMarkup(text) {
                             innerSpan: { start: m.index + 1, end: m.index + m[0].length },
                             outerSpan: { start: m.index, end: m.index + m[0].length },
                             entities: [],
-                            params: {},
+                            params: {}
                         })),
-                        params: { type: token[0].slice(1, -1) },
+                        params: { type: token[0].slice(1, -1) }
                     });
                     pos = markerIndex;
                 }
@@ -364,7 +366,22 @@ export function parseMarkup(text) {
                     innerSpan: { start: indice.start + 1, end: indice.end - 1 },
                     outerSpan: indice,
                     entities: [],
-                    params: {},
+                    params: {}
+                });
+                break;
+            }
+            case "named_link": {
+                const linkRegex = /\[(.*?)\]\((.*?)\)/;
+                const linkMatch = linkRegex.exec(text.slice(indice.start, indice.end));
+                entities.push({
+                    type: "named_link",
+                    innerSpan: indice,
+                    outerSpan: indice,
+                    entities: [],
+                    params: {
+                        name: linkMatch === null || linkMatch === void 0 ? void 0 : linkMatch[1],
+                        url: linkMatch === null || linkMatch === void 0 ? void 0 : linkMatch[2]
+                    }
                 });
                 break;
             }
@@ -374,7 +391,7 @@ export function parseMarkup(text) {
                     innerSpan: indice,
                     outerSpan: indice,
                     entities: [],
-                    params: {},
+                    params: {}
                 });
                 break;
             }
@@ -385,7 +402,7 @@ export function parseMarkup(text) {
                     innerSpan: span,
                     outerSpan: indice,
                     entities: [],
-                    params: {},
+                    params: {}
                 });
                 break;
             }
@@ -399,12 +416,12 @@ export function parseMarkup(text) {
     parseLine({ start: text.length, end: text.length });
     checkColor({
         start: (_j = (_h = entities[entities.length - 1]) === null || _h === void 0 ? void 0 : _h.outerSpan.end) !== null && _j !== void 0 ? _j : 0,
-        end: text.length,
+        end: text.length
     });
     if (entities.length > 0) {
         checkColor({
             start: 0,
-            end: text.length,
+            end: text.length
         });
     }
     return ({
@@ -412,7 +429,7 @@ export function parseMarkup(text) {
         innerSpan: { start: 0, end: text.length },
         outerSpan: { start: 0, end: text.length },
         entities: entities,
-        params: {},
+        params: {}
     });
 }
 /** modifies an entity's entities to add text spans */
@@ -421,12 +438,12 @@ export function addTextSpans(entity) {
     if (entity.entities.length === 0 && entity.type === "text") {
         return entity;
     }
-    let entities = [];
+    const entities = [];
     for (let i = 0; i < entity.entities.length; i++) {
         const e = entity.entities[i];
         const textSpan = {
             start: (_b = (_a = entities[entities.length - 1]) === null || _a === void 0 ? void 0 : _a.outerSpan.end) !== null && _b !== void 0 ? _b : entity.innerSpan.start,
-            end: e.outerSpan.start,
+            end: e.outerSpan.start
         };
         if (textSpan.end > textSpan.start) {
             entities.push({
@@ -434,14 +451,14 @@ export function addTextSpans(entity) {
                 innerSpan: textSpan,
                 outerSpan: textSpan,
                 entities: [],
-                params: {},
+                params: {}
             });
         }
         entities.push(addTextSpans(e));
     }
     const endingTextSpan = {
         start: (_d = (_c = entity.entities[entity.entities.length - 1]) === null || _c === void 0 ? void 0 : _c.outerSpan.end) !== null && _d !== void 0 ? _d : entity.innerSpan.start,
-        end: entity.innerSpan.end,
+        end: entity.innerSpan.end
     };
     if (endingTextSpan.end > endingTextSpan.start) {
         entities.push({
@@ -449,7 +466,7 @@ export function addTextSpans(entity) {
             innerSpan: endingTextSpan,
             outerSpan: endingTextSpan,
             entities: [],
-            params: {},
+            params: {}
         });
     }
     return { ...entity, entities };
