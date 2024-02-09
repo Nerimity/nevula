@@ -1,5 +1,6 @@
+//@ts-nocheck
 // generated from: https://github.com/brecert/unicode-emoji-regex
-const isReactNative = typeof navigator !== 'undefined' && navigator.product === 'ReactNative';
+const isReactNative = typeof navigator !== "undefined" && navigator.product === "ReactNative";
 const EMOJI =
   /(?:(?:(?:(?:(?:\p{Emoji})(?:\u{FE0F}))|(?:(?:\p{Emoji_Modifier_Base})(?:\p{Emoji_Modifier}))|(?:\p{Emoji}))(?:[\u{E0020}-\u{E007E}]+)(?:\u{E007F}))|(?:(?:(?:(?:\p{Emoji_Modifier_Base})(?:\p{Emoji_Modifier}))|(?:(?:\p{Emoji})(?:\u{FE0F}))|(?:\p{Emoji}))(?:(?:\u{200d})(?:(?:(?:\p{Emoji_Modifier_Base})(?:\p{Emoji_Modifier}))|(?:(?:\p{Emoji})(?:\u{FE0F}))|(?:\p{Emoji})))+)|(?:(?:(?:\p{Regional_Indicator})(?:\p{Regional_Indicator}))|(?:(?:\p{Emoji_Modifier_Base})(?:\p{Emoji_Modifier}))|(?:[0-9#*]\u{FE0F}\u{20E3})|(?:(?:\p{Emoji})(?:\u{FE0F}))))|\p{Emoji_Presentation}|\p{Extended_Pictographic}/u;
 
@@ -17,12 +18,13 @@ export class UnreachableCaseError extends Error {
 
 /** Partition a list into two parts based on a boolean: `[true, false]` */
 export function partition<T>(list: T[], filter: (item: T) => boolean) {
-  let result: [T[], T[]] = [[], []];
+  const result: [T[], T[]] = [[], []];
   for (let i = 0; i < list.length; i++) {
     const item = list[i];
     if (filter(item)) {
       result[0].push(item);
-    } else {
+    }
+    else {
       result[1].push(item);
     }
   }
@@ -62,6 +64,10 @@ export type EntityType<N, T = {}> = {
 export type Entity =
   | EntityType<"text">
   | EntityType<"link">
+  | EntityType<"named_link", {
+    url: string;
+    name: string;
+  }>
   | EntityType<"bold">
   | EntityType<"italic">
   | EntityType<"spoiler">
@@ -98,7 +104,7 @@ const generateRegex = (parts: Record<string, RegExp>) => {
     Object.entries(parts)
       .map(([type, pattern]) => `(${pattern.source})`)
       .join("|"),
-      isReactNative ? "g" : "gu",
+    isReactNative ? "g" : "gu"
   );
 };
 
@@ -115,6 +121,7 @@ const TOKEN_PARTS = {
   codeblock: /```/,
   code: /`?`/,
   spoiler: /\|\|/,
+  named_link: /\[(?:.|[\s*\p{L}\p{N}\u{21}-\u{2F}_]+)\]\(https?:\/\/\S+\.[\p{Alphabetic}\d/\\#?=+&%@!;:._~-]+\)/u,
   link: /https?:\/\/\S+\.[\p{Alphabetic}\d\/\\#?=+&%@!;:._~-]+/u,
   link_contained: /<https?:\/\/\S+\.[\p{Alphabetic}\d\/\\#?=+&%@!;:._~-]+>/u,
   emoji: EMOJI,
@@ -123,7 +130,7 @@ const TOKEN_PARTS = {
   custom_end: /\]/,
   emoji_name: /:\w+:/,
   newline: /\r?\n/,
-  egg: /§([0-9a-fr])/,
+  egg: /§([0-9a-fr])/
 };
 
 const EGGS: Record<string, string> = {
@@ -143,7 +150,7 @@ const EGGS: Record<string, string> = {
   "§d": "#F5F",
   "§e": "#FF5",
   "§f": "#FFF",
-  "§r": "#reset",
+  "§r": "#reset"
 };
 
 // todo: manually do this
@@ -173,9 +180,9 @@ export type Marker = {
  * @returns A root text entitiy, meant to make entity rendering easier
  */
 export function parseMarkup(text: string): Entity {
-  let markers: Marker[] = [];
+  const markers: Marker[] = [];
   let entities: Entity[] = [];
-  let tokens = [...text.matchAll(TOKENS)];
+  const tokens = [...text.matchAll(TOKENS)];
 
   /** checks if a line is the beginning to or the end of a blockquote */
   function parseLine(indice: Span) {
@@ -193,7 +200,7 @@ export function parseMarkup(text: string): Entity {
 
       const [innerEntities, remainingEntities] = partition(
         entities,
-        (e) => containsSpan(outerSpan, e.outerSpan),
+        (e) => containsSpan(outerSpan, e.outerSpan)
       );
 
       markers.splice(markerIndex);
@@ -203,7 +210,7 @@ export function parseMarkup(text: string): Entity {
         innerSpan,
         outerSpan,
         entities: innerEntities,
-        params: {},
+        params: {}
       });
     }
 
@@ -212,12 +219,12 @@ export function parseMarkup(text: string): Entity {
       checkColor({
         start: entities[entities.length - 1]?.outerSpan.end ?? 0,
         // Remove newline
-        end: indice.end - 1,
+        end: indice.end - 1
       });
 
       markers.push({
         type: "blockquote",
-        span: { start: indice.start, end: indice.end + 2 },
+        span: { start: indice.start, end: indice.end + 2 }
       });
     }
   }
@@ -228,7 +235,7 @@ export function parseMarkup(text: string): Entity {
       (m) =>
         m.type === "color" &&
         m.span.start >= span.start &&
-        span.end >= m.span.end,
+        span.end >= m.span.end
     );
 
     if (markerIndex >= 0) {
@@ -239,7 +246,7 @@ export function parseMarkup(text: string): Entity {
 
       const [innerEntities, remainingEntities] = partition(
         entities,
-        (e) => containsSpan(outerSpan, e.innerSpan),
+        (e) => containsSpan(outerSpan, e.innerSpan)
       );
 
       markers.splice(markerIndex);
@@ -247,7 +254,7 @@ export function parseMarkup(text: string): Entity {
 
       checkColor({
         start: span.start,
-        end: outerSpan.start,
+        end: outerSpan.start
       });
 
       entities.push({
@@ -256,8 +263,8 @@ export function parseMarkup(text: string): Entity {
         outerSpan,
         entities: innerEntities,
         params: {
-          color: marker.data! as `#${string}` | `reset`,
-        },
+          color: marker.data! as `#${string}` | "reset"
+        }
       });
 
       return true;
@@ -279,7 +286,7 @@ export function parseMarkup(text: string): Entity {
 
     const indice: Span = {
       start: token.index,
-      end: token.index + token[0].length,
+      end: token.index + token[0].length
     };
 
     switch (type) {
@@ -293,7 +300,7 @@ export function parseMarkup(text: string): Entity {
           innerSpan: { start: indice.start + 1, end: indice.end - 1 },
           outerSpan: indice,
           entities: [],
-          params: {},
+          params: {}
         });
         break;
       }
@@ -303,7 +310,7 @@ export function parseMarkup(text: string): Entity {
           innerSpan: indice,
           outerSpan: indice,
           entities: [],
-          params: {},
+          params: {}
         });
         break;
       }
@@ -326,7 +333,7 @@ export function parseMarkup(text: string): Entity {
 
           const [innerEntities, remainingEntities] = partition(
             entities,
-            (e) => containsSpan(outerSpan, e.innerSpan),
+            (e) => containsSpan(outerSpan, e.innerSpan)
           );
 
           markers.splice(markerIndex);
@@ -336,13 +343,14 @@ export function parseMarkup(text: string): Entity {
             innerSpan,
             outerSpan,
             entities: innerEntities,
-            params: {},
+            params: {}
           });
-        } else {
+        }
+        else {
           markers.push({
             type: type,
             span: indice,
-            data: data,
+            data: data
           });
         }
 
@@ -360,14 +368,14 @@ export function parseMarkup(text: string): Entity {
           const endToken = tokens[markerIndex];
           const endIndice: Span = {
             start: endToken.index!,
-            end: endToken.index! + endToken[0].length,
+            end: endToken.index! + endToken[0].length
           };
 
           // why does this work?
           // todo: verify behavior
           checkColor({
             start: indice.start,
-            end: indice.start,
+            end: indice.start
           });
 
           // todo: write a better system that's more generalized for escaping
@@ -380,9 +388,9 @@ export function parseMarkup(text: string): Entity {
               innerSpan: { start: m.index! + 1, end: m.index! + m[0].length },
               outerSpan: { start: m.index!, end: m.index! + m[0].length },
               entities: [],
-              params: {},
+              params: {}
             })),
-            params: {},
+            params: {}
           });
 
           pos = markerIndex;
@@ -401,7 +409,7 @@ export function parseMarkup(text: string): Entity {
           const endToken = tokens[markerIndex];
           const endIndice: Span = {
             start: endToken.index!,
-            end: endToken.index! + endToken[0].length,
+            end: endToken.index! + endToken[0].length
           };
           // get lang param
           const langRegex = /\w*\r?\n/y;
@@ -412,7 +420,7 @@ export function parseMarkup(text: string): Entity {
 
           checkColor({
             start: entities[entities.length - 1]?.outerSpan.end ?? 0,
-            end: indice.start,
+            end: indice.start
           });
 
           entities.push({
@@ -420,7 +428,7 @@ export function parseMarkup(text: string): Entity {
             // add the lang length to the innerSpan start to skip that when getting the text
             innerSpan: {
               start: indice.end + (args?.[0]?.length ?? 0),
-              end: endIndice.start,
+              end: endIndice.start
             },
             outerSpan: { start: indice.start, end: endIndice.end },
             entities: escapes.map((m) => ({
@@ -428,11 +436,11 @@ export function parseMarkup(text: string): Entity {
               innerSpan: { start: m.index! + 1, end: m.index! + m[0].length },
               outerSpan: { start: m.index!, end: m.index! + m[0].length },
               entities: [],
-              params: {},
+              params: {}
             })),
             params: {
-              lang: lang,
-            },
+              lang: lang
+            }
           });
 
           pos = markerIndex;
@@ -453,7 +461,7 @@ export function parseMarkup(text: string): Entity {
         markers.push({
           type: "color",
           span: indice,
-          data: color,
+          data: color
         });
 
         break;
@@ -469,12 +477,12 @@ export function parseMarkup(text: string): Entity {
           const endToken = tokens[markerIndex];
           const endIndice: Span = {
             start: endToken.index!,
-            end: endToken.index! + endToken[0].length,
+            end: endToken.index! + endToken[0].length
           };
 
           checkColor({
             start: entities[entities.length - 1]?.outerSpan.end ?? 0,
-            end: indice.start,
+            end: indice.start
           });
 
           entities.push({
@@ -486,9 +494,9 @@ export function parseMarkup(text: string): Entity {
               innerSpan: { start: m.index! + 1, end: m.index! + m[0].length },
               outerSpan: { start: m.index!, end: m.index! + m[0].length },
               entities: [],
-              params: {},
+              params: {}
             })),
-            params: { type: token[0].slice(1, -1) },
+            params: { type: token[0].slice(1, -1) }
           });
 
           pos = markerIndex;
@@ -501,7 +509,22 @@ export function parseMarkup(text: string): Entity {
           innerSpan: { start: indice.start + 1, end: indice.end - 1 },
           outerSpan: indice,
           entities: [],
-          params: {},
+          params: {}
+        });
+        break;
+      }
+      case "named_link": {
+        const linkRegex = /\[(.*?)\]\((.*?)\)/;
+        const linkMatch = linkRegex.exec(text.slice(indice.start, indice.end));
+        entities.push({
+          type: "named_link",
+          innerSpan: indice,
+          outerSpan: indice,
+          entities: [],
+          params: {
+            name: linkMatch?.[1],
+            url: linkMatch?.[2]
+          }
         });
         break;
       }
@@ -511,7 +534,7 @@ export function parseMarkup(text: string): Entity {
           innerSpan: indice,
           outerSpan: indice,
           entities: [],
-          params: {},
+          params: {}
         });
         break;
       }
@@ -522,7 +545,7 @@ export function parseMarkup(text: string): Entity {
           innerSpan: span,
           outerSpan: indice,
           entities: [],
-          params: {},
+          params: {}
         });
         break;
       }
@@ -536,12 +559,12 @@ export function parseMarkup(text: string): Entity {
   parseLine({ start: text.length, end: text.length });
   checkColor({
     start: entities[entities.length - 1]?.outerSpan.end ?? 0,
-    end: text.length,
+    end: text.length
   });
   if (entities.length > 0) {
     checkColor({
       start: 0,
-      end: text.length,
+      end: text.length
     });
   }
 
@@ -550,7 +573,7 @@ export function parseMarkup(text: string): Entity {
     innerSpan: { start: 0, end: text.length },
     outerSpan: { start: 0, end: text.length },
     entities: entities,
-    params: {},
+    params: {}
   });
 }
 
@@ -560,7 +583,7 @@ export function addTextSpans(entity: Entity): Entity {
     return entity;
   }
 
-  let entities: Entity[] = [];
+  const entities: Entity[] = [];
 
   for (let i = 0; i < entity.entities.length; i++) {
     const e = entity.entities[i];
@@ -568,7 +591,7 @@ export function addTextSpans(entity: Entity): Entity {
     const textSpan = {
       start: entities[entities.length - 1]?.outerSpan.end ??
         entity.innerSpan.start,
-      end: e.outerSpan.start,
+      end: e.outerSpan.start
     };
 
     if (textSpan.end > textSpan.start) {
@@ -577,7 +600,7 @@ export function addTextSpans(entity: Entity): Entity {
         innerSpan: textSpan,
         outerSpan: textSpan,
         entities: [],
-        params: {},
+        params: {}
       });
     }
 
@@ -587,7 +610,7 @@ export function addTextSpans(entity: Entity): Entity {
   const endingTextSpan = {
     start: entity.entities[entity.entities.length - 1]?.outerSpan.end ??
       entity.innerSpan.start,
-    end: entity.innerSpan.end,
+    end: entity.innerSpan.end
   };
 
   if (endingTextSpan.end > endingTextSpan.start) {
@@ -596,7 +619,7 @@ export function addTextSpans(entity: Entity): Entity {
       innerSpan: endingTextSpan,
       outerSpan: endingTextSpan,
       entities: [],
-      params: {},
+      params: {}
     });
   }
 
