@@ -33,6 +33,8 @@ export type Entity = EntityType<"text"> | EntityType<"link"> | EntityType<"named
 }> | EntityType<"bold"> | EntityType<"italic"> | EntityType<"spoiler"> | EntityType<"underline"> | EntityType<"strikethrough"> | EntityType<"code"> | EntityType<"emoji"> | EntityType<"emoji_name"> | EntityType<"codeblock", {
     /** What language highlighting should be used to highlight the codeblock */
     lang?: string;
+}> | EntityType<"heading", {
+    level: 1 | 2 | 3 | 4 | 5 | 6;
 }> | EntityType<"blockquote", {
     /** Not currently used, only typed for spec complience */
     borderColor?: string;
@@ -44,7 +46,7 @@ export type Entity = EntityType<"text"> | EntityType<"link"> | EntityType<"named
 }>;
 /** A marker used for identifying and matching tokens  */
 export type Marker = {
-    type: "bold" | "italic" | "underline" | "spoiler" | "strikethrough" | "blockquote" | "color";
+    type: "bold" | "italic" | "underline" | "spoiler" | "strikethrough" | "blockquote" | "heading" | "color";
     span: Span;
     data?: string;
 };

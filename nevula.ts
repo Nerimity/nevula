@@ -81,6 +81,9 @@ export type Entity =
     /** What language highlighting should be used to highlight the codeblock */
     lang?: string;
   }>
+  | EntityType<"heading", {
+    level: 1 | 2 | 3 | 4 | 5 | 6;
+  }>
   | EntityType<"blockquote", {
     /** Not currently used, only typed for spec complience */
     borderColor?: string;
@@ -170,11 +173,14 @@ export type Marker = {
     | "spoiler"
     | "strikethrough"
     | "blockquote"
+    | "heading"
     | "color";
   span: Span;
   data?: string;
 };
 
+
+const HeadingRegex = /^(#|##|###|####|#####|######) /;
 /**
  * Parses a string into entities
  * @returns A root text entitiy, meant to make entity rendering easier
@@ -186,12 +192,13 @@ export function parseMarkup(text: string): Entity {
 
   /** checks if a line is the beginning to or the end of a blockquote */
   function parseLine(indice: Span) {
-    const markerIndex = markers.findIndex((m) => m.type === "blockquote");
+    const blockQuoteMarkerIndex = markers.findIndex((m) => m.type === "blockquote");
+    const headingMarkerIndex = markers.findIndex((m) => m.type === "heading");
 
     // todo: this is nearly the same as the bold, italic, etc... family of parsing rules and can likely be simplified into a function
     //       for now though I'm keeping it like this for performance and the fear of micro-drying
-    if (markerIndex >= 0) {
-      const marker = markers[markerIndex];
+    if (blockQuoteMarkerIndex >= 0) {
+      const marker = markers[blockQuoteMarkerIndex];
 
       const innerSpan = { start: marker.span.end, end: indice.start };
       const outerSpan = { start: marker.span.start, end: indice.end };
@@ -203,7 +210,7 @@ export function parseMarkup(text: string): Entity {
         (e) => containsSpan(outerSpan, e.outerSpan)
       );
 
-      markers.splice(markerIndex);
+      markers.splice(blockQuoteMarkerIndex);
       entities = remainingEntities;
       entities.push({
         type: "blockquote",
@@ -211,6 +218,32 @@ export function parseMarkup(text: string): Entity {
         outerSpan,
         entities: innerEntities,
         params: {}
+      });
+    }
+
+    if (headingMarkerIndex >= 0) {
+      const marker = markers[headingMarkerIndex];
+
+      const innerSpan = { start: marker.span.end, end: indice.start };
+      const outerSpan = { start: marker.span.start, end: indice.end };
+
+      checkColor(innerSpan);
+
+      const [innerEntities, remainingEntities] = partition(
+        entities,
+        (e) => containsSpan(outerSpan, e.outerSpan)
+      );
+
+      markers.splice(headingMarkerIndex);
+      entities = remainingEntities;
+      entities.push({
+        type: "heading",
+        innerSpan,
+        outerSpan,
+        entities: innerEntities,
+        params: {
+          level: marker?.data as 1 | 2 | 3 | 4 | 5 | 6
+        }
       });
     }
 
@@ -227,6 +260,26 @@ export function parseMarkup(text: string): Entity {
         span: { start: indice.start, end: indice.end + 2 }
       });
     }
+
+
+
+    const headingMatch = HeadingRegex.exec(text.slice(indice.end));
+
+    if (headingMatch) {      
+      checkColor({
+        start: entities[entities.length - 1]?.outerSpan.end ?? 0,
+        // Remove newline
+        end: indice.end - 1
+      });
+      
+      markers.push({
+        type: "heading",
+        span: { start: indice.start, end: indice.end + headingMatch[0].length },
+        data: headingMatch[1]?.length
+        
+      });
+    }
+    
   }
 
   const checkColor = (span: Span) => {

@@ -95,6 +95,7 @@ const TYPES = generateMapping(TOKEN_PARTS);
 function tokenType(token) {
     return TYPES[token.findIndex((g, i) => i != 0 && g != null) - 1];
 }
+const HeadingRegex = /^(#|##|###|####|#####|######) /;
 /**
  * Parses a string into entities
  * @returns A root text entitiy, meant to make entity rendering easier
@@ -106,17 +107,18 @@ export function parseMarkup(text) {
     const tokens = [...text.matchAll(TOKENS)];
     /** checks if a line is the beginning to or the end of a blockquote */
     function parseLine(indice) {
-        var _a, _b;
-        const markerIndex = markers.findIndex((m) => m.type === "blockquote");
+        var _a, _b, _c, _d, _e;
+        const blockQuoteMarkerIndex = markers.findIndex((m) => m.type === "blockquote");
+        const headingMarkerIndex = markers.findIndex((m) => m.type === "heading");
         // todo: this is nearly the same as the bold, italic, etc... family of parsing rules and can likely be simplified into a function
         //       for now though I'm keeping it like this for performance and the fear of micro-drying
-        if (markerIndex >= 0) {
-            const marker = markers[markerIndex];
+        if (blockQuoteMarkerIndex >= 0) {
+            const marker = markers[blockQuoteMarkerIndex];
             const innerSpan = { start: marker.span.end, end: indice.start };
             const outerSpan = { start: marker.span.start, end: indice.end };
             checkColor(innerSpan);
             const [innerEntities, remainingEntities] = partition(entities, (e) => containsSpan(outerSpan, e.outerSpan));
-            markers.splice(markerIndex);
+            markers.splice(blockQuoteMarkerIndex);
             entities = remainingEntities;
             entities.push({
                 type: "blockquote",
@@ -124,6 +126,24 @@ export function parseMarkup(text) {
                 outerSpan,
                 entities: innerEntities,
                 params: {}
+            });
+        }
+        if (headingMarkerIndex >= 0) {
+            const marker = markers[headingMarkerIndex];
+            const innerSpan = { start: marker.span.end, end: indice.start };
+            const outerSpan = { start: marker.span.start, end: indice.end };
+            checkColor(innerSpan);
+            const [innerEntities, remainingEntities] = partition(entities, (e) => containsSpan(outerSpan, e.outerSpan));
+            markers.splice(headingMarkerIndex);
+            entities = remainingEntities;
+            entities.push({
+                type: "heading",
+                innerSpan,
+                outerSpan,
+                entities: innerEntities,
+                params: {
+                    level: marker === null || marker === void 0 ? void 0 : marker.data
+                }
             });
         }
         if (text.startsWith("> ", indice.end)) {
@@ -136,6 +156,19 @@ export function parseMarkup(text) {
             markers.push({
                 type: "blockquote",
                 span: { start: indice.start, end: indice.end + 2 }
+            });
+        }
+        const headingMatch = HeadingRegex.exec(text.slice(indice.end));
+        if (headingMatch) {
+            checkColor({
+                start: (_d = (_c = entities[entities.length - 1]) === null || _c === void 0 ? void 0 : _c.outerSpan.end) !== null && _d !== void 0 ? _d : 0,
+                // Remove newline
+                end: indice.end - 1
+            });
+            markers.push({
+                type: "heading",
+                span: { start: indice.start, end: indice.end + headingMatch[0].length },
+                data: (_e = headingMatch[1]) === null || _e === void 0 ? void 0 : _e.length
             });
         }
     }
