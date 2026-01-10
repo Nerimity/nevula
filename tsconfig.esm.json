@@ -2,7 +2,7 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "module": "ESNext",
-    "target": "es2019",
+    "target": "es2022",
     "declaration": true,
     "outDir": "publish/esm"
   }
