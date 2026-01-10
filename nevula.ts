@@ -91,6 +91,9 @@ export type Entity =
   | EntityType<"color", {
     color: "reset" | `#${string}`;
   }>
+  | EntityType<"checkbox", {
+    checked: boolean
+  }>
   | EntityType<"custom", {
     /** The custom expression type */
     type: string;
@@ -124,6 +127,7 @@ const TOKEN_PARTS = {
   codeblock: /```/,
   code: /`?`/,
   spoiler: /\|\|/,
+  checkbox: /-\[(?:x| )\]/,
   named_link: /\[(?:.|[\s*\p{L}\p{N}\u{21}-\u{2F}_]+)\]\(https?:\/\/\S+\.[\p{Alphabetic}\d/\\#?=+&%@!;:._~-]+\)/u,
   link: /https?:\/\/\S+\.[\p{Alphabetic}\d\/\\#?=+&%@!;:._~-]+/u,
   link_contained: /<https?:\/\/\S+\.[\p{Alphabetic}\d\/\\#?=+&%@!;:._~-]+>/u,
@@ -179,8 +183,8 @@ export type Marker = {
   data?: string;
 };
 
-
 const HeadingRegex = /^(#|##|###|####|#####|######) /;
+
 /**
  * Parses a string into entities
  * @returns A root text entitiy, meant to make entity rendering easier
@@ -499,6 +503,29 @@ export function parseMarkup(text: string): Entity {
           pos = markerIndex;
         }
         break;
+      }
+      case "checkbox": {
+        const checkboxRegex = /-\[(?<inner>x| )\]/gd;
+        checkboxRegex.lastIndex = indice.start;
+        const result = checkboxRegex.exec(text) ?? [];
+        if(result == null) break
+
+        const innerIndice: Span = {
+          start: result.indices.groups.inner.index,
+          end: result.indices.groups.inner.end
+        };
+
+        entities.push({
+          type: "checkbox",
+          innerSpan: innerIndice,
+          outerSpan: indice,
+          entities: [],
+          params: {
+            checked: result.groups.inner == 'x'
+          }
+        })
+        
+        break
       }
       case "egg":
       case "color": {

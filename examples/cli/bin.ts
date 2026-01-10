@@ -86,6 +86,9 @@ function transformEntity(entity: Entity, ctx: Context): string {
       const url = sliceText(ctx, entity.innerSpan);
       return h("a", { href: url }, url);
     }
+    case "checkbox": {
+      return h("input", { type: "checkbox", checked: entity.params.checked })
+    }
     case "color": {
       const { color } = entity.params;
       if (color.startsWith("#")) {

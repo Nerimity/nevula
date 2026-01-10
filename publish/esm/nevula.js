@@ -59,6 +59,7 @@ const TOKEN_PARTS = {
     codeblock: /```/,
     code: /`?`/,
     spoiler: /\|\|/,
+    checkbox: /-\[(?:x| )\]/,
     named_link: /\[(?:.|[\s*\p{L}\p{N}\u{21}-\u{2F}_]+)\]\(https?:\/\/\S+\.[\p{Alphabetic}\d/\\#?=+&%@!;:._~-]+\)/u,
     link: /https?:\/\/\S+\.[\p{Alphabetic}\d\/\\#?=+&%@!;:._~-]+/u,
     link_contained: /<https?:\/\/\S+\.[\p{Alphabetic}\d\/\\#?=+&%@!;:._~-]+>/u,
@@ -101,7 +102,7 @@ const HeadingRegex = /^(#|##|###|####|#####|######) /;
  * @returns A root text entitiy, meant to make entity rendering easier
  */
 export function parseMarkup(text) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _j;
+    var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k;
     const markers = [];
     let entities = [];
     const tokens = [...text.matchAll(TOKENS)];
@@ -347,6 +348,27 @@ export function parseMarkup(text) {
                 }
                 break;
             }
+            case "checkbox": {
+                const checkboxRegex = /-\[(?<inner>x| )\]/gd;
+                checkboxRegex.lastIndex = indice.start;
+                const result = (_f = checkboxRegex.exec(text)) !== null && _f !== void 0 ? _f : [];
+                if (result == null)
+                    break;
+                const innerIndice = {
+                    start: result.indices.groups.inner.index,
+                    end: result.indices.groups.inner.end
+                };
+                entities.push({
+                    type: "checkbox",
+                    innerSpan: innerIndice,
+                    outerSpan: indice,
+                    entities: [],
+                    params: {
+                        checked: result.groups.inner == 'x'
+                    }
+                });
+                break;
+            }
             case "egg":
             case "color": {
                 let color = type === "color"
@@ -373,7 +395,7 @@ export function parseMarkup(text) {
                         end: endToken.index + endToken[0].length
                     };
                     checkColor({
-                        start: (_g = (_f = entities[entities.length - 1]) === null || _f === void 0 ? void 0 : _f.outerSpan.end) !== null && _g !== void 0 ? _g : 0,
+                        start: (_h = (_g = entities[entities.length - 1]) === null || _g === void 0 ? void 0 : _g.outerSpan.end) !== null && _h !== void 0 ? _h : 0,
                         end: indice.start
                     });
                     entities.push({
@@ -448,7 +470,7 @@ export function parseMarkup(text) {
     }
     parseLine({ start: text.length, end: text.length });
     checkColor({
-        start: (_j = (_h = entities[entities.length - 1]) === null || _h === void 0 ? void 0 : _h.outerSpan.end) !== null && _j !== void 0 ? _j : 0,
+        start: (_k = (_j = entities[entities.length - 1]) === null || _j === void 0 ? void 0 : _j.outerSpan.end) !== null && _k !== void 0 ? _k : 0,
         end: text.length
     });
     if (entities.length > 0) {

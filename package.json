@@ -20,7 +20,7 @@
     "build": "tsc --build tsconfig.esm.json && tsc --build tsconfig.node.json",
     "bench": "deno run --allow-hrtime bench.ts",
     "test": "deno test",
-    "update": "yarn test && yarn update:example && yarn update:bench && yarn build",
+    "update": "pnpm run test && pnpm run update:example && pnpm run update:bench && pnpm run build",
     "update:example": "deno run -A ./examples/cli/bin.ts examples/example.nv examples/cli/example.out.html",
     "update:bench": "deno run --allow-write --allow-read --allow-hrtime ./bench.ts update-readme"
   },

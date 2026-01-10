@@ -548,7 +548,7 @@ Deno.test("links should be surrounded", () => {
   );
 });
 
-Deno.test("links should parse unwanted symbols", () => {
+Deno.test("links shouldn't parse unwanted symbols", () => {
   let text = "hello https://example.com) world";
   let textNodes = entitySlices(text, addTextSpans(parseMarkup(text)));
   assertEquals(
@@ -562,6 +562,59 @@ Deno.test("links should parse unwanted symbols", () => {
     ]],
   );
 });
+
+Deno.test("checkboxes should be parsed", () => {
+  let text = "hello -[ ] world";
+  let textNodes = entitySlices(text, addTextSpans(parseMarkup(text)));
+  assertEquals(
+    textNodes,
+    ["text", {}, [
+      ["text", {}, "hello "],
+      ["checkbox", { checked: false }, []],
+      ["text", {}, " world"],
+    ]],
+  );
+});
+
+Deno.test("checkboxes checked should be parsed", () => {
+  let text = "hello -[x] world";
+  let textNodes = entitySlices(text, addTextSpans(parseMarkup(text)));
+  assertEquals(
+    textNodes,
+    ["text", {}, [
+      ["text", {}, "hello "],
+      ["checkbox", { checked: true }, []],
+      ["text", {}, " world"],
+    ]],
+  );
+});
+
+Deno.test("checkboxes should be ignored if invalid", () => {
+  let text = "hello -[g] -[] world";
+  let textNodes = entitySlices(text, addTextSpans(parseMarkup(text)));
+  assertEquals(
+    textNodes,
+    ["text", {}, "hello -[g] -[] world"],
+  );
+});
+
+Deno.test("multipled checkboxes should be parsed", () => {
+  let text = "-[ ] hello -[x]-[ ] world -[x]";
+  let textNodes = entitySlices(text, addTextSpans(parseMarkup(text)));
+  assertEquals(
+    textNodes,
+    ["text", {}, [
+      ["checkbox", { checked: false }, []],
+      ["text", {}, " hello "],
+      ["checkbox", { checked: true }, []],
+      ["checkbox", { checked: false }, []],
+      ["text", {}, " world "],
+      ["checkbox", { checked: true }, []],
+    ]],
+  );
+});
+
+
 
 Deno.test("links should parse a full url", () => {
   let text = "hello https://example.com/example?example=123) world";

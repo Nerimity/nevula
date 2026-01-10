@@ -18,3 +18,5 @@ https://example.com
 Example:
 ``> normal **bold //italic// __under\``__line__\``__** :sparkles: ✨``
 > normal **bold //[#b37] italic// __under``__line__``__** :sparkles: ✨
+-[ ] checkboxes
+-[x]-[ ] and -[x] inline -[x] checkboxes -[ ]-[x]
