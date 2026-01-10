@@ -40,6 +40,8 @@ export type Entity = EntityType<"text"> | EntityType<"link"> | EntityType<"named
     borderColor?: string;
 }> | EntityType<"color", {
     color: "reset" | `#${string}`;
+}> | EntityType<"checkbox", {
+    checked: boolean;
 }> | EntityType<"custom", {
     /** The custom expression type */
     type: string;

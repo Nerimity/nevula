@@ -59,6 +59,7 @@ const TOKEN_PARTS = {
     codeblock: /```/,
     code: /`?`/,
     spoiler: /\|\|/,
+    checkbox: /-\[(?:x| )\]/,
     named_link: /\[(?:.|[\s*\p{L}\p{N}\u{21}-\u{2F}_]+)\]\(https?:\/\/\S+\.[\p{Alphabetic}\d/\\#?=+&%@!;:._~-]+\)/u,
     link: /https?:\/\/\S+\.[\p{Alphabetic}\d\/\\#?=+&%@!;:._~-]+/u,
     link_contained: /<https?:\/\/\S+\.[\p{Alphabetic}\d\/\\#?=+&%@!;:._~-]+>/u,
@@ -101,13 +102,11 @@ const HeadingRegex = /^(#|##|###|####|#####|######) /;
  * @returns A root text entitiy, meant to make entity rendering easier
  */
 export function parseMarkup(text) {
-    var _a, _b, _c, _d, _e, _f, _g, _h, _j;
     const markers = [];
     let entities = [];
     const tokens = [...text.matchAll(TOKENS)];
     /** checks if a line is the beginning to or the end of a blockquote */
     function parseLine(indice) {
-        var _a, _b, _c, _d, _e;
         const blockQuoteMarkerIndex = markers.findIndex((m) => m.type === "blockquote");
         const headingMarkerIndex = markers.findIndex((m) => m.type === "heading");
         // todo: this is nearly the same as the bold, italic, etc... family of parsing rules and can likely be simplified into a function
@@ -142,14 +141,14 @@ export function parseMarkup(text) {
                 outerSpan,
                 entities: innerEntities,
                 params: {
-                    level: marker === null || marker === void 0 ? void 0 : marker.data
+                    level: marker?.data
                 }
             });
         }
         if (text.startsWith("> ", indice.end)) {
             // Temporarily limit checkColor scope to single lines.
             checkColor({
-                start: (_b = (_a = entities[entities.length - 1]) === null || _a === void 0 ? void 0 : _a.outerSpan.end) !== null && _b !== void 0 ? _b : 0,
+                start: entities[entities.length - 1]?.outerSpan.end ?? 0,
                 // Remove newline
                 end: indice.end - 1
             });
@@ -161,14 +160,14 @@ export function parseMarkup(text) {
         const headingMatch = HeadingRegex.exec(text.slice(indice.end));
         if (headingMatch) {
             checkColor({
-                start: (_d = (_c = entities[entities.length - 1]) === null || _c === void 0 ? void 0 : _c.outerSpan.end) !== null && _d !== void 0 ? _d : 0,
+                start: entities[entities.length - 1]?.outerSpan.end ?? 0,
                 // Remove newline
                 end: indice.end - 1
             });
             markers.push({
                 type: "heading",
                 span: { start: indice.start, end: indice.end + headingMatch[0].length },
-                data: (_e = headingMatch[1]) === null || _e === void 0 ? void 0 : _e.length
+                data: headingMatch[1]?.length
             });
         }
     }
@@ -319,16 +318,16 @@ export function parseMarkup(text) {
                     langRegex.lastIndex = indice.end;
                     const args = langRegex.exec(text);
                     // remove the \n
-                    const lang = (_a = args === null || args === void 0 ? void 0 : args[0]) === null || _a === void 0 ? void 0 : _a.trim();
+                    const lang = args?.[0]?.trim();
                     checkColor({
-                        start: (_c = (_b = entities[entities.length - 1]) === null || _b === void 0 ? void 0 : _b.outerSpan.end) !== null && _c !== void 0 ? _c : 0,
+                        start: entities[entities.length - 1]?.outerSpan.end ?? 0,
                         end: indice.start
                     });
                     entities.push({
                         type: "codeblock",
                         // add the lang length to the innerSpan start to skip that when getting the text
                         innerSpan: {
-                            start: indice.end + ((_e = (_d = args === null || args === void 0 ? void 0 : args[0]) === null || _d === void 0 ? void 0 : _d.length) !== null && _e !== void 0 ? _e : 0),
+                            start: indice.end + (args?.[0]?.length ?? 0),
                             end: endIndice.start
                         },
                         outerSpan: { start: indice.start, end: endIndice.end },
@@ -345,6 +344,27 @@ export function parseMarkup(text) {
                     });
                     pos = markerIndex;
                 }
+                break;
+            }
+            case "checkbox": {
+                const checkboxRegex = /-\[(?<inner>x| )\]/gd;
+                checkboxRegex.lastIndex = indice.start;
+                const result = checkboxRegex.exec(text) ?? [];
+                if (result == null)
+                    break;
+                const innerIndice = {
+                    start: result.indices.groups.inner.index,
+                    end: result.indices.groups.inner.end
+                };
+                entities.push({
+                    type: "checkbox",
+                    innerSpan: innerIndice,
+                    outerSpan: indice,
+                    entities: [],
+                    params: {
+                        checked: result.groups.inner == 'x'
+                    }
+                });
                 break;
             }
             case "egg":
@@ -373,7 +393,7 @@ export function parseMarkup(text) {
                         end: endToken.index + endToken[0].length
                     };
                     checkColor({
-                        start: (_g = (_f = entities[entities.length - 1]) === null || _f === void 0 ? void 0 : _f.outerSpan.end) !== null && _g !== void 0 ? _g : 0,
+                        start: entities[entities.length - 1]?.outerSpan.end ?? 0,
                         end: indice.start
                     });
                     entities.push({
@@ -412,8 +432,8 @@ export function parseMarkup(text) {
                     outerSpan: indice,
                     entities: [],
                     params: {
-                        name: linkMatch === null || linkMatch === void 0 ? void 0 : linkMatch[1],
-                        url: linkMatch === null || linkMatch === void 0 ? void 0 : linkMatch[2]
+                        name: linkMatch?.[1],
+                        url: linkMatch?.[2]
                     }
                 });
                 break;
@@ -448,7 +468,7 @@ export function parseMarkup(text) {
     }
     parseLine({ start: text.length, end: text.length });
     checkColor({
-        start: (_j = (_h = entities[entities.length - 1]) === null || _h === void 0 ? void 0 : _h.outerSpan.end) !== null && _j !== void 0 ? _j : 0,
+        start: entities[entities.length - 1]?.outerSpan.end ?? 0,
         end: text.length
     });
     if (entities.length > 0) {
@@ -467,7 +487,6 @@ export function parseMarkup(text) {
 }
 /** modifies an entity's entities to add text spans */
 export function addTextSpans(entity) {
-    var _a, _b, _c, _d;
     if (entity.entities.length === 0 && entity.type === "text") {
         return entity;
     }
@@ -475,7 +494,8 @@ export function addTextSpans(entity) {
     for (let i = 0; i < entity.entities.length; i++) {
         const e = entity.entities[i];
         const textSpan = {
-            start: (_b = (_a = entities[entities.length - 1]) === null || _a === void 0 ? void 0 : _a.outerSpan.end) !== null && _b !== void 0 ? _b : entity.innerSpan.start,
+            start: entities[entities.length - 1]?.outerSpan.end ??
+                entity.innerSpan.start,
             end: e.outerSpan.start
         };
         if (textSpan.end > textSpan.start) {
@@ -490,7 +510,8 @@ export function addTextSpans(entity) {
         entities.push(addTextSpans(e));
     }
     const endingTextSpan = {
-        start: (_d = (_c = entity.entities[entity.entities.length - 1]) === null || _c === void 0 ? void 0 : _c.outerSpan.end) !== null && _d !== void 0 ? _d : entity.innerSpan.start,
+        start: entity.entities[entity.entities.length - 1]?.outerSpan.end ??
+            entity.innerSpan.start,
         end: entity.innerSpan.end
     };
     if (endingTextSpan.end > endingTextSpan.start) {

@@ -1,6 +1,6 @@
 {
   "name": "@nerimity/nevula",
-  "version": "0.14.0",
+  "version": "0.15.0",
   "description": "A (relatively) simple and (hopefully) performant markup parser",
   "main": "publish/node/nevula.js",
   "browser": "publish/esm/nevula.js",
@@ -9,7 +9,7 @@
     "type": "git",
     "url": "git+https://github.com/Nerimity/nevula.git"
   },
-  "author": "brecert <11599528+Brecert@users.noreply.github.com>",
+  "author": "brecert <me@bree.dev>",
   "license": "MIT",
   "files": [
     "nevula.ts",
@@ -20,7 +20,7 @@
     "build": "tsc --build tsconfig.esm.json && tsc --build tsconfig.node.json",
     "bench": "deno run --allow-hrtime bench.ts",
     "test": "deno test",
-    "update": "yarn test && yarn update:example && yarn update:bench && yarn build",
+    "update": "pnpm run test && pnpm run update:example && pnpm run update:bench && pnpm run build",
     "update:example": "deno run -A ./examples/cli/bin.ts examples/example.nv examples/cli/example.out.html",
     "update:bench": "deno run --allow-write --allow-read --allow-hrtime ./bench.ts update-readme"
   },
@@ -31,7 +31,7 @@
     "nerimity"
   ],
   "devDependencies": {
-    "typescript": "^4.9.5"
+    "typescript": "^5.9.3"
   },
   "homepage": "https://github.com/Nerimity/nevula#readme",
   "directories": {
