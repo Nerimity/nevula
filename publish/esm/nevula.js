@@ -54,7 +54,7 @@ const TOKEN_PARTS = {
     escape: /\\[\\*/_~`\[\]]/,
     bold: /\*\*/,
     underline: /__/,
-    italic: /(?:_|\*|\/\/)/,
+    italic: /(?:\*|\/\/|(?<!\w)_|_(?!\w))/,
     strikethrough: /~~/,
     codeblock: /```/,
     code: /`?`/,

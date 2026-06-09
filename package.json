@@ -1,6 +1,6 @@
 {
   "name": "@nerimity/nevula",
-  "version": "0.15.0",
+  "version": "0.15.1",
   "description": "A (relatively) simple and (hopefully) performant markup parser",
   "main": "publish/node/nevula.js",
   "browser": "publish/esm/nevula.js",
@@ -31,7 +31,7 @@
     "nerimity"
   ],
   "devDependencies": {
-    "typescript": "^5.9.3"
+    "typescript": "^6.0.3"
   },
   "homepage": "https://github.com/Nerimity/nevula#readme",
   "directories": {

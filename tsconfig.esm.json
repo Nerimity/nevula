@@ -2,7 +2,8 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "module": "ESNext",
-    "target": "es2022",
+    "moduleResolution": "bundler",
+    "target": "es2023",
     "declaration": true,
     "outDir": "publish/esm"
   }
