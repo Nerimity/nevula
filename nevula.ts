@@ -128,7 +128,7 @@ const TOKEN_PARTS = {
   code: /`?`/,
   spoiler: /\|\|/,
   checkbox: /-\[(?:x| )\]/,
-  named_link: /\[(?:.|[\s*\p{L}\p{N}\u{21}-\u{2F}_]+)\]\(https?:\/\/\S+\.[\p{Alphabetic}\d/\\#?=+&%@!;:._~-]+\)/u,
+  named_link: /\[[\s\S]+?\]\(https?:\/\/\S+\.[\p{Alphabetic}\d/\\#?=+&%@!;:._~-]+\)/u,
   link: /https?:\/\/\S+\.[\p{Alphabetic}\d\/\\#?=+&%@!;:._~-]+/u,
   link_contained: /<https?:\/\/\S+\.[\p{Alphabetic}\d\/\\#?=+&%@!;:._~-]+>/u,
   emoji: EMOJI,
