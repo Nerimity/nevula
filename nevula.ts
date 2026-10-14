@@ -128,7 +128,7 @@ const TOKEN_PARTS = {
   code: /`?`/,
   spoiler: /\|\|/,
   checkbox: /-\[(?:x| )\]/,
-  named_link: /\[[\s\S]+?\]\(https?:\/\/\S+\.[\p{Alphabetic}\d/\\#?=+&%@!;:._~-]+\)/u,
+  named_link: /\[(?:(?!\]\s)[\s\S])+?\]\(https?:\/\/\S+\.[\p{Alphabetic}\d/\\#?=+&%@!;:._~-]+\)/u,
   link: /https?:\/\/\S+\.[\p{Alphabetic}\d\/\\#?=+&%@!;:._~-]+/u,
   link_contained: /<https?:\/\/\S+\.[\p{Alphabetic}\d\/\\#?=+&%@!;:._~-]+>/u,
   emoji: EMOJI,
@@ -594,16 +594,19 @@ export function parseMarkup(text: string): Entity {
         break;
       }
       case "named_link": {
-        const linkRegex = /\[(.*?)\]\((.*?)\)/;
+        const linkRegex = /\[([\s\S]*?)\]\(([\s\S]*?)\)/;
         const linkMatch = linkRegex.exec(text.slice(indice.start, indice.end));
+        if (!linkMatch) {
+          throw new Error(`Unable to parse named link: ${text.slice(indice.start, indice.end)}`);
+        }
         entities.push({
           type: "named_link",
           innerSpan: indice,
           outerSpan: indice,
           entities: [],
           params: {
-            name: linkMatch?.[1],
-            url: linkMatch?.[2]
+            name: linkMatch[1],
+            url: linkMatch[2]
           }
         });
         break;

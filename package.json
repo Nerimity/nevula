@@ -1,6 +1,6 @@
 {
   "name": "@nerimity/nevula",
-  "version": "0.15.3",
+  "version": "0.15.4",
   "description": "A (relatively) simple and (hopefully) performant markup parser",
   "main": "publish/node/nevula.js",
   "browser": "publish/esm/nevula.js",
@@ -17,7 +17,7 @@
     "publish/node/*"
   ],
   "scripts": {
-    "build": "tsc --build tsconfig.esm.json && tsc --build tsconfig.node.json",
+    "build": "node -e \"require('node:fs').rmSync('publish', { recursive: true, force: true })\" && tsc --build tsconfig.esm.json && tsc --build tsconfig.node.json",
     "bench": "deno run --allow-hrtime bench.ts",
     "test": "deno test",
     "update": "pnpm run test && pnpm run update:example && pnpm run update:bench && pnpm run build",
